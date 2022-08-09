@@ -1,6 +1,28 @@
 <?php
     require_once "commons.php";
-    $products = getDatabaseConnection();
+
+    function displayIndex(){
+        $productsConnection = getDatabaseConnection();
+        session_start();
+        $fetchedProducts = fetchProducts($productsConnection, "index");
+        echo '<div class="products">';
+        if ($fetchedProducts->num_rows > 0) {
+            while($row = $fetchedProducts->fetch_assoc()) {
+                showProducts($row);
+
+                echo '</div >';
+                echo '<a href="?addToCart='.$row["id"].'">Add</a>';
+
+                echo '</div>';
+                echo '<br>';
+            }
+        }
+        if(isset($_GET['addToCart'])){
+            addProduct($_GET['addToCart']);
+        }
+        echo '<a href="cart.php">Go to cart</a>';
+        echo '<div class="products">';
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,36 +35,8 @@
   </head>
   <body>
   <?php
-    //TODO add where id in the set of ids not in cart
-    $select_products = 'SELECT * from products';
-    $statement_products = $products->prepare($select_products);
-    $statement_products->execute();
-    $resulted_products = $statement_products->get_result();
-
-    if ($resulted_products->num_rows > 0) {
-      while($row = $resulted_products->fetch_assoc()) {
-          echo '<div class="product">';
-          echo '<img src="images/'.$row["id"].'.png" alt="'.$row["id"].'-image">';
-          echo '<div class="info">';
-          echo '<span class="title">';
-          echo $row["title"];
-          echo '</span>';
-          echo '<br>';
-
-          echo '<span class="description">';
-          echo $row["description"];
-          echo '</span>';
-          echo '<br>';
-
-          echo '<span class="price">';
-          echo $row["price"] . getCurrency();
-          echo '</span>';
-          echo '<br>';
-
-          echo '</div>';
-          echo '</div>';
-      }
-    }
+    displayIndex();
+  die();
   ?>
 
   </body>

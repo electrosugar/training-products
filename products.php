@@ -1,6 +1,6 @@
 <?php
 require_once "commons.php";
-$productsConnection = getDatabaseConnection();
+$products_connection = getDatabaseConnection();
 session_start();
 ?>
 <!DOCTYPE html>
@@ -9,29 +9,30 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Cart</title>
+    <title>Products</title>
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
 <?php
-    $fetchedProducts = fetchProducts($productsConnection, "cart");
+$fetched_products = fetchProducts($products_connection, "all");
     echo '<div class="products">';
-    if(!$fetchedProducts){
+    if(!$fetched_products){
         echo "No products in cart! <br>";
     }
     else{
-        if ($fetchedProducts->num_rows > 0) {
-            while($row = $fetchedProducts->fetch_assoc()) {
+        if ($fetched_products->num_rows > 0) {
+            while($row = $fetched_products->fetch_assoc()) {
                 showProducts($row);
 
                 echo '</div >';
-                echo '<a href="?removeFromCart='.$row["id"].'">Remove</a>';
+                echo '<a href="?deleteProduct='.$row["id"].'">Delete</a>';
                 echo '</div>';
                 echo '<br>';
             }
         }
     }
     echo '<div class="products">';
+
     if(isset($_GET['removeFromCart'])){
         removeProduct($_GET['removeFromCart']);
     }
@@ -44,7 +45,7 @@ session_start();
     <span class="formLinks"> <input type="submit" name="Checkout"><a href="index.php">Go to index</a></span>
 </form>
 <?php
-    die();
+die();
 ?>
 </body>
 </html>
