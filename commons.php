@@ -37,7 +37,6 @@ require_once "config.php";
     //fetches specific products, where page specifies the select type for each page(all, cart or index)
     //cart = all cart products, index = all products not in the cart
     function fetchProducts($productsConnection, $page){
-
         $cartProducts = '';
         if(isset($_SESSION['cart'])){
             foreach($_SESSION['cart'] as $cartProduct){
@@ -56,7 +55,7 @@ require_once "config.php";
                     $selectProducts = 'SELECT * from products where id in ('.$cartProducts.')';
                 }
                 else return null;
-            break;
+                break;
             case 'index':
                 if($cartProducts){
                     $selectProducts = 'SELECT * from products where not id in ('.$cartProducts.')';
@@ -64,9 +63,9 @@ require_once "config.php";
                 else{
                     $selectProducts = 'SELECT * from products';
                 }
-            break;
+                break;
             case 'all': $selectProducts = 'SELECT * from products';
-            break;
+                break;
 
         }
 
@@ -76,26 +75,13 @@ require_once "config.php";
         return $resultedProducts;
     }
 
-    function showProducts($row){
-        echo '<div class="product">';
-        echo '<img src="images/'.$row["id"].'.png" alt="'.$row["id"].'-image" height="100px" width="100px">';
-        echo '<div class="info">';
-        echo '<span class="title">';
-        echo $row["title"];
-        echo '</span>';
-        echo '<br>';
-
-        echo '<span class="description">';
-        echo $row["description"];
-        echo '</span>';
-        echo '<br>';
-
-        echo '<span class="price">';
-        echo $row["price"] . getCurrency();
-        echo '</span>';
-        echo '<br>';
-    }
-
     function translateText($text, $language='english'){
         return $text;
+    }
+
+    function logout(){
+        session_start();
+        session_unset();
+        session_destroy();
+        header("Location: login.php");
     }
