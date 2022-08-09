@@ -1,4 +1,8 @@
 <?php
+    require_once "commons.php";
+    $productsConnection = getDatabaseConnection();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,10 +15,10 @@
 </head>
 <body>
 <div class="loginBody">
-    <form class="login" action="login.php" method="post">
+    <form class="login" method="post" action="login.php" >
         Login
-        <input type="text" placeholder="Username" class="loginInputs">
-        <input type="text" placeholder="Password" class="loginInputs">
+        <input type="text" placeholder="Username" name="username" class="loginInputs">
+        <input type="text" placeholder="Password" name="password" class="loginInputs">
         <input type="submit" class="loginInputs" value="Login">
     </form>
 </div>
