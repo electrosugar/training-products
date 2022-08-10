@@ -1,18 +1,23 @@
 <?php
-    require_once "commons.php";
-    session_start();
 
-    $productsConnection = getDatabaseConnection();
-    $fetchedProducts = fetchProducts($productsConnection, "index");
-    $products = array();
-    if (isset($fetchedProducts) && $fetchedProducts->num_rows > 0) {
-        while($row = $fetchedProducts->fetch_assoc()) {
-           $products[] = $row;
+require_once 'common.php';
+session_start();
+$products = getProducts('index');
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    foreach($_POST as $productId => $value){
+        if($value == translateText('Add')) {
+            if (!isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = [];
+            }
+            if (!in_array(strip_tags($productId), $_SESSION['cart'])) {
+                $_SESSION['cart'][] = strip_tags($productId);
+            }
+            header("Refresh:0");
         }
     }
-    if(isset($_GET['addToCart'])){
-        addProduct(htmlspecialchars($_GET['addToCart']));
-    }
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -28,20 +33,22 @@
   <div class="products">
       <?php foreach ($products as $product): ?>
        <div class="product">
-          <img src="images/<?php echo htmlspecialchars($product['id']); ?>.png" alt="'.<?php echo htmlspecialchars($product['id']); ?>.'-image" height="100px" width="100px">
+          <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" height="100px" width="100px">
           <div class="info">
-              <span class="title"><?php echo htmlspecialchars($product['title']); ?></span>
+              <span class="title"><?= strip_tags($product['title']); ?></span>
               <br>
-              <span class="description"><?php echo htmlspecialchars($product['description']); ?></span>
+              <span class="description"><?= strip_tags($product['description']); ?></span>
               <br>
-              <span class="price"><?php echo htmlspecialchars($product['price'].getCurrency());?></span>
+              <span class="price"><?= strip_tags($product['price'].getCurrency());?></span>
               <br>
               </div >
-           <span><a href="?addToCart=<?php echo htmlspecialchars($product['id']); ?>">Add</a></span>
+           <form action="index.php" method="post">
+           <input type="submit" name="<?= strip_tags($product['id']); ?>" value="<?= translateText('Add'); ?>">
+           </form>
        </div>
       <br>
       <?php endforeach ?>
-      <a href="cart.php">Go to cart</a>
+      <a href="cart.php"><?= translateText('Go to cart'); ?></a>
   </div>
 
   </body>
