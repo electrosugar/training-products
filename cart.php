@@ -1,28 +1,29 @@
 <?php
-require_once "commons.php";
+
+require_once 'common.php';
 session_start();
 
-$productsConnection = getDatabaseConnection();
-$fetchedProducts = fetchProducts($productsConnection, "cart");
-
-    $products = array();
-    if (isset($fetchedProducts) && $fetchedProducts->num_rows > 0) {
-        while($row = $fetchedProducts->fetch_assoc()) {
-            $products[] = $row;
+$products = getProducts('cart');
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    foreach($_POST as $productId => $value){
+        if($value == translateText('Remove')){
+            if(!isset($_SESSION['cart'])){
+                $_SESSION['cart'] = array();
+            }
+            if (($key = array_search($productId, $_SESSION['cart'])) !== false) {
+                unset( $_SESSION['cart'][$key]);
+            }
+            header("Refresh:0");
         }
     }
 
-    if(isset($_GET['removeFromCart'])){
-        removeProduct($_GET['removeFromCart']);
-    }
+    if (isset($_POST['name']) && isset($_POST['contact']) && isset($_POST['comment'])) {
+        $name = strip_tags($_POST['name']);
+        $contact = strip_tags($_POST['contact']);
+        $comment = strip_tags($_POST['comment']);
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $name = htmlspecialchars($_POST['name']);
-        $contact = htmlspecialchars($_POST['contact']);
-        $comment = htmlspecialchars($_POST['comment']);
-
-
-        if (!empty($name) && !empty($contact) && !empty($comment)) {
+        $productsConnection = getDatabaseConnection();
+        if(!empty($name) && !empty($contact) && !empty($comment)){
             $insertCustomers = $productsConnection->prepare('INSERT INTO customers (creation_date, name, contact, comment) VALUES (now(), ?, ?, ?)');
             $insertCustomers->bind_param('sss', $name, $contact, $comment);
             $insertCustomers->execute();
@@ -34,7 +35,11 @@ $fetchedProducts = fetchProducts($productsConnection, "cart");
                 $insertOrder->execute();
             }
         }
+
     }
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -50,25 +55,27 @@ $fetchedProducts = fetchProducts($productsConnection, "cart");
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?php echo htmlspecialchars($product['id']); ?>.png" alt="'.<?php echo htmlspecialchars($product['id']); ?>.'-image" height="100px" width="100px">
+            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" height="100px" width="100px">
             <div class="info">
-                <span class="title"><?php echo htmlspecialchars($product['title']); ?></span>
+                <span class="title"><?= strip_tags($product['title']); ?></span>
                 <br>
-                <span class="description"><?php echo htmlspecialchars($product['description']); ?></span>
+                <span class="description"><?= strip_tags($product['description']); ?></span>
                 <br>
-                <span class="price"><?php echo htmlspecialchars($product['price'].getCurrency());?></span>
+                <span class="price"><?= strip_tags($product['price'].getCurrency());?></span>
                 <br>
             </div >
-            <span><a href="?removeFromCart=<?php echo htmlspecialchars($product['id']); ?>">Remove</a></span>
+            <form action="cart.php" method="post">
+                <input type="submit" name="<?= strip_tags($product['id']); ?>" value="<?= translateText('Remove'); ?>">
+            </form>
         </div>
         <br>
     <?php endforeach ?>
 </div>
 <form action="cart.php" method="post" class="form">
-    <?php echo translateText("Name") ?>: <input type="text" name="name" placeholder="Name"><br>
-    <?php echo translateText('Contact Details') ?> <input type="text" name="contact" placeholder="Contact Details"><br>
-    <?php echo translateText('Comment') ?> <input type="text" name="comment" placeholder="Comment" id="big"><br>
-    <span class="formLinks"> <input type="submit" name="Checkout"><a href="index.php">Go to index</a></span>
+    <?= translateText("Name") ?>: <input type="text" name="name" placeholder="<?= translateText('Name'); ?>"><br>
+    <?= translateText('Contact Details') ?> <input type="text" name="contact" placeholder="<?= translateText('Contact Details'); ?>"><br>
+    <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment'); ?>" id="big"><br>
+    <span class="formLinks"> <input type="submit" value="Checkout"><a href="index.php"><?= translateText('Go to index'); ?></a><a href="orders.php">Go to orders</a></span>
 </form>
 <?php
     die();
