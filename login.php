@@ -54,6 +54,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         <input type="text" placeholder="<?= translateText('Username')?>" name="username" class="loginInputs" value="">
         <input type="text" placeholder="<?= translateText('Password')?>" name="password" class="loginInputs" value="">
         <input type="submit" class="loginInputs" value="Login">
+        <a href="index.php"><?= translateText('Anonymous User')?></a>
         <?php
             if(isset($userError)){
                 echo translateText($userError);
