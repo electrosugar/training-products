@@ -2,7 +2,6 @@
 
 require_once 'common.php';
 session_start();
-$products = getProducts('index');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     foreach($_POST as $productId => $value){
@@ -11,13 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['cart'] = [];
             }
             if (!in_array(strip_tags($productId), $_SESSION['cart'])) {
-                $_SESSION['cart'][] = strip_tags($productId);
+                array_push($_SESSION['cart'], strip_tags($productId));
             }
             header("Refresh:0");
         }
     }
 }
-
+$products = getProducts('index');
 
 ?>
 <!DOCTYPE html>
@@ -49,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <br>
       <?php endforeach ?>
       <a href="cart.php"><?= translateText('Go to cart'); ?></a>
+      <a href="login.php"><?= translateText('Log in')?></a>
   </div>
 
   </body>
