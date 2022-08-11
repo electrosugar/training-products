@@ -4,14 +4,15 @@ require_once 'common.php';
 session_start();
 
 $products = getProducts('cart');
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     foreach($_POST as $productId => $value){
         if($value == translateText('Remove')){
             if(!isset($_SESSION['cart'])){
-                $_SESSION['cart'] = array();
+                $_SESSION['cart'] = [];
             }
             if (($key = array_search($productId, $_SESSION['cart'])) !== false) {
-                unset( $_SESSION['cart'][$key]);
+                unset($_SESSION['cart'][$key]);
             }
             header("Refresh:0");
         }
