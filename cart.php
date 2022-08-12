@@ -6,17 +6,16 @@ session_start();
 $products = getProducts('cart');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    foreach($_POST as $productId => $value){
-        if($value == translateText('Remove')){
-            if(!isset($_SESSION['cart'])){
-                $_SESSION['cart'] = [];
-            }
-            if (($key = array_search($productId, $_SESSION['cart'])) !== false) {
-                unset($_SESSION['cart'][$key]);
-            }
+    if(isset($_POST['remove'])){
+        if(!isset($_SESSION['cart'])){
+            $_SESSION['cart'] = [];
+        }
+        elseif (($key = array_search($_POST['remove'], $_SESSION['cart'])) !== false) {
+            unset($_SESSION['cart'][$key]);
             header("Refresh:0");
         }
     }
+
 
     if (isset($_POST['name']) && isset($_POST['contact']) && isset($_POST['comment'])) {
         $name = strip_tags($_POST['name']);
@@ -26,15 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $productsConnection = getDatabaseConnection();
         if(!empty($name) && !empty($contact) && !empty($comment)){
             $insertCustomers = $productsConnection->prepare('INSERT INTO customers (creation_date, name, contact, comment) VALUES (now(), ?, ?, ?)');
-            $insertCustomers->bind_param('sss', $name, $contact, $comment);
-            $insertCustomers->execute();
-            $idCustomer = $insertCustomers->insert_id;
+            $insertCustomers->execute([$name, $contact, $comment]);
+            $idCustomer = $productsConnection->lastInsertId();
 
             $insertOrder = $productsConnection->prepare('INSERT INTO orders (id_customer, id_product) VALUES ( ?, ?)');
             foreach($_SESSION['cart'] as $idProduct){
-                $insertOrder->bind_param('ii', $idCustomer, $idProduct);
-                $insertOrder->execute();
+                $insertOrder->execute([$idCustomer, $idProduct]);
             }
+        }
+        else{
+            echo 'The order was not processed';
         }
 
     }
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <br>
             </div >
             <form action="cart.php" method="post">
-                <input type="submit" name="<?= strip_tags($product['id']); ?>" value="<?= translateText('Remove'); ?>">
+                <button type="submit" value="<?= strip_tags($product['id']); ?>" name='remove'><?= translateText('Remove')?></button>
             </form>
         </div>
         <br>
