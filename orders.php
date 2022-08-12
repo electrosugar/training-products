@@ -5,26 +5,20 @@ session_start();
     $databaseConnection = getDatabaseConnection();
     $selectAllCustomers = $databaseConnection->prepare('select * from customers');
     $selectAllCustomers->execute();
-    $resultedCustomers =  $selectAllCustomers->get_result();
 
-    $customers = array();
-    if (isset($resultedCustomers) && $resultedCustomers->num_rows > 0) {
-        while($row = $resultedCustomers->fetch_assoc()) {
-            $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
-            if($selectProductIds){
-                $selectProductIds->bind_param('i', $row['id']);
-                $selectProductIds->execute();
-                $productIds = $selectProductIds->get_result();
-                $price = 0;
-                while($productId = $productIds->fetch_assoc()) {
-                    $selectPrice =  $databaseConnection->prepare('select title, price from products where id = ?');
-                    $selectPrice->bind_param('i', $productId['id_product']);
-                    $selectPrice->execute();
-                    $price += $selectPrice->get_result()->fetch_assoc()['price'];
-                }
-                $row['price'] = $price;
-                $customers[] = $row;
+    $customers = [];
+    foreach($selectAllCustomers->fetchAll() as $row ) {
+        $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
+        if($selectProductIds){
+            $selectProductIds->execute( [$row['id']]);
+            $price = 0;
+            while($productId = $selectProductIds->fetch()) {
+                $selectPrice =  $databaseConnection->prepare('select title, price from products where id = ?');
+                $selectPrice->execute([$productId['id_product']]);
+                $price += $selectPrice->fetch()['price'];
             }
+            $row['price'] = $price;
+            $customers[] = $row;
         }
     }
 ?>
@@ -42,21 +36,21 @@ session_start();
     <?php foreach ($customers as $customerDetail): ?>
         <div class="product">
             <div class="info">
-                <span class="title"><?php echo translateText('Name: ') . htmlspecialchars($customerDetail['name']); ?></span>
+                <span class="title"><?= translateText('Name: ') . htmlspecialchars($customerDetail['name']); ?></span>
                 <br>
-                <span class="description"><?php echo translateText('Contact: ') . htmlspecialchars($customerDetail['contact']); ?></span>
+                <span class="description"><?= translateText('Contact: ') . htmlspecialchars($customerDetail['contact']); ?></span>
                 <br>
-                <span class="price"><?php echo translateText('Comment: ') . htmlspecialchars($customerDetail['comment']);?></span>
+                <span class="price"><?= translateText('Comment: ') . htmlspecialchars($customerDetail['comment']);?></span>
                 <br>
-                <span class="price"><?php echo translateText('Date: ') . htmlspecialchars($customerDetail['creation_date']);?></span>
+                <span class="price"><?= translateText('Date: ') . htmlspecialchars($customerDetail['creation_date']);?></span>
                 <br>
             </div >
-            <span><?php echo translateText('Total Price: ') . $customerDetail['price'].getCurrency() ?></span>
+            <span><?= translateText('Total Price: ') . $customerDetail['price'].getCurrency() ?></span>
         </div>
         <br>
     <?php endforeach ?>
-    <a href="cart.php">Go to cart</a>
-    <a href="cart.php">Go to index</a>
+    <a href="cart.php"><?= translateText('Go to cart ') ?></a>
+    <a href="order.php"><?= translateText('Advanced Orders ') ?></a>
 </div>
 
 </body>
