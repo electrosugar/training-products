@@ -4,16 +4,12 @@ require_once 'common.php';
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    foreach($_POST as $productId => $value){
-        if($value == translateText('Add')) {
-            if (!isset($_SESSION['cart'])) {
-                $_SESSION['cart'] = [];
-            }
-            if (!in_array(strip_tags($productId), $_SESSION['cart'])) {
-                array_push($_SESSION['cart'], strip_tags($productId));
-            }
-            header("Refresh:0");
-        }
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+    if (!in_array(strip_tags($_POST['add']), $_SESSION['cart'])) {
+        array_push($_SESSION['cart'], strip_tags($_POST['add']));
+        header("Refresh:0");
     }
 }
 $products = getProducts('index');
@@ -42,13 +38,13 @@ $products = getProducts('index');
               <br>
               </div >
            <form action="index.php" method="post">
-           <input type="submit" name="<?= strip_tags($product['id']); ?>" value="<?= translateText('Add'); ?>">
+               <button type="submit" value="<?= strip_tags($product['id']); ?>" name='add'><?= translateText('Add')?></button>
            </form>
        </div>
       <br>
       <?php endforeach ?>
-      <a href="cart.php"><?= translateText('Go to cart'); ?></a>
-      <a href="login.php"><?= translateText('Log in')?></a>
+      <a href="cart.php"><?= translateText(' Go to cart '); ?></a>
+      <a href="login.php"><?= translateText(' Log in ')?></a>
   </div>
 
   </body>
