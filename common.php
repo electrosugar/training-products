@@ -3,12 +3,20 @@
 require_once 'config.php';
 
 function getDatabaseConnection(){
-    $productsConnection = new mysqli(constant('SERVER_NAME'), constant('USER'), constant('PASSWORD'), constant('DATABASE_NAME'));
-
-    if($productsConnection->connect_error){
-        die('Connection Failed:' . $productsConnection->connect_error);
+    if(!isset($pdo)){
+        $dsn = 'mysql:host='.SERVER_NAME.';dbname='.DATABASE_NAME.';';
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+        try {
+             $pdo = new PDO($dsn, USER, PASSWORD, $options);
+             return $pdo;
+        } catch (\PDOException $e) {
+             throw new \PDOException($e->getMessage(), (int)$e->getCode());
+        }
     }
-    return $productsConnection;
 }
 
 function getCurrency(){
@@ -18,29 +26,25 @@ function getCurrency(){
 
 //fetches specific products, where page specifies the select type for each page(all, cart or index)
 //cart = all cart products, index = all products not in the cart
-function fetchProducts($productsConnection, $page){
-    $cartProducts = '';
+function fetchProducts($pdoConnection, $page){
+    $querryValues = '?';
     if(isset($_SESSION['cart'])){
-        foreach($_SESSION['cart'] as $cartProduct){
-            if($cartProducts){
-                $cartProducts = $cartProducts .','.$cartProduct;
-            }
-            else{
-                $cartProducts = $cartProduct;
-            }
+        if(count($_SESSION['cart']) === 0){
+            $querryValues = false;
+        }elseif (count($_SESSION['cart']) > 1) {
+            $querryValues = $querryValues . str_repeat(',?', count($_SESSION['cart'])-1);
         }
     }
-
 switch ($page){
     case 'cart':
-        if($cartProducts){
-            $selectProducts = 'SELECT * from products where id in ('.$cartProducts.')';
+        if($querryValues){
+            $selectProducts = 'SELECT * from products where id in ('.$querryValues.')';
         }
-        else return null;
+        else  $selectProducts = 'SELECT * from products where id != id';
         break;
     case 'index':
-        if($cartProducts){
-            $selectProducts = 'SELECT * from products where not id in ('.$cartProducts.')';
+        if($querryValues){
+            $selectProducts = 'SELECT * from products where not id in ('.$querryValues.')';
         }
         else{
             $selectProducts = 'SELECT * from products';
@@ -51,20 +55,25 @@ switch ($page){
     default: $selectProducts = 'SELECT * from products';
 }
 
-$statementProducts = $productsConnection->prepare($selectProducts);
-$statementProducts->execute();
-$resultedProducts = $statementProducts->get_result();
-return $resultedProducts;
+if($querryValues){
+    $statementSelectProducts = $pdoConnection->prepare($selectProducts);
+    $statementSelectProducts->execute([...$_SESSION['cart']]);
+}
+else{
+    $statementSelectProducts = $pdoConnection->query($selectProducts);
+}
+$fetchedProducts = $statementSelectProducts->fetchAll();
+return $fetchedProducts;
 }
 
 //the page parameter is used to denote what kind of select indexes are fetched (in cart, in index, all)
 function getProducts($page){
-    $productsConnection = getDatabaseConnection();
-    $fetchedProducts = fetchProducts($productsConnection, $page);
-    $products = array();
-    if (isset($fetchedProducts) && $fetchedProducts->num_rows > 0) {
-        while($row = $fetchedProducts->fetch_assoc()) {
-            $products[] = $row;
+    $pdoConnection = getDatabaseConnection();
+    $fetchedProducts = fetchProducts($pdoConnection, $page);
+    $products = [];
+    if (isset($fetchedProducts) && $fetchedProducts) {
+        foreach($fetchedProducts as $fetchedProduct) {
+            array_push($products,$fetchedProduct);
         }
     }
     return $products;
