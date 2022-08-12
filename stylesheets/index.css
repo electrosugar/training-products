@@ -9,6 +9,13 @@ body{
     flex-direction: row;
     align-items: center;
     padding: 1em;
+    margin: 1em;
+}
+.products{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
 }
 .info{
     text-align:left;
@@ -44,4 +51,22 @@ body{
 .loginInputs{
     padding: 1em;
     margin: 1em;
+}
+
+.order{
+    border: 5px solid dodgerblue;
+    padding: 1em;
+    margin: 4em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.selectedProducts{
+    border: 5px solid lightseagreen;
+    padding: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
 }
