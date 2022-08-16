@@ -2,6 +2,10 @@
 
 require_once 'common.php';
 session_start();
+if((!isset($_SESSION['id']) || !isset($_SESSION['username']))){
+    logout();
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $productEditId = $_POST['id'];
     $updateValues = [];
@@ -16,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if($editProduct->execute($updateValues)){
             echo 'Successful Edit!';
         }
-        $target_dir = "images/";
+        $target_dir = 'images/';
         $target_file = $target_dir . $productEditId . '.png';
         if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
             echo 'The file '. htmlspecialchars( basename( $_FILES['image']['name'])). ' has been uploaded.';

@@ -6,19 +6,19 @@ session_start();
 
 $pdoConnection = getDatabaseConnection();
 
-if(isset($_GET['action']) && $_GET['action'] == 'logout'){
+if(isset($_GET['action']) && $_GET['action'] == 'logout' || (!isset($_SESSION['id']) || !isset($_SESSION['username']))){
     logout();
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     print_r($_POST);
     if (isset($_POST)) {
-        $deleteProduct = $pdoConnection->prepare("DELETE FROM products WHERE id=? LIMIT 1");
+        $deleteProduct = $pdoConnection->prepare('DELETE FROM products WHERE id=? LIMIT 1');
         if ($deleteProduct->execute([$_POST['delete']]) === TRUE) {
             echo 'Record deleted successfully!';
         } else {
             echo 'Failed deleting record!';
         }
-        header("Refresh:0");
+        header('Refresh:0');
     }
 }
 
