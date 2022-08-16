@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $pdoConnection = getDatabaseConnection();
     if(isset($productEditId) && $productEditId != 0){
         $editProduct = $pdoConnection->prepare('UPDATE products SET '.$updateMarks.' where id = ?');
-        array_push($updateValues, $productEditId);
+        $updateValues[] = $productEditId;
         if($editProduct->execute($updateValues)){
             echo 'Successful Edit!';
         }
