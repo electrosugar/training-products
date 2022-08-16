@@ -18,6 +18,7 @@ function getDatabaseConnection(){
              throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
     }
+    return null;
 }
 
 function getCurrency(){
