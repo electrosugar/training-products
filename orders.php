@@ -2,25 +2,25 @@
 
 require_once 'common.php';
 session_start();
-    $databaseConnection = getDatabaseConnection();
-    $selectAllCustomers = $databaseConnection->prepare('select * from customers');
-    $selectAllCustomers->execute();
+$databaseConnection = getDatabaseConnection();
+$selectAllCustomers = $databaseConnection->prepare('select * from customers');
+$selectAllCustomers->execute();
 
-    $customers = [];
-    foreach($selectAllCustomers->fetchAll() as $row ) {
-        $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
-        if($selectProductIds){
-            $selectProductIds->execute( [$row['id']]);
-            $price = 0;
-            while($productId = $selectProductIds->fetch()) {
-                $selectPrice =  $databaseConnection->prepare('select title, price from products where id = ?');
-                $selectPrice->execute([$productId['id_product']]);
-                $price += $selectPrice->fetch()['price'];
-            }
-            $row['price'] = $price;
-            $customers[] = $row;
+$customers = [];
+foreach($selectAllCustomers->fetchAll() as $row ) {
+    $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
+    if($selectProductIds){
+        $selectProductIds->execute( [$row['id']]);
+        $price = 0;
+        while($productId = $selectProductIds->fetch()) {
+            $selectPrice =  $databaseConnection->prepare('select title, price from products where id = ?');
+            $selectPrice->execute([$productId['id_product']]);
+            $price += $selectPrice->fetch()['price'];
         }
+        $row['price'] = $price;
+        $customers[] = $row;
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,13 +36,13 @@ session_start();
     <?php foreach ($customers as $customerDetail): ?>
         <div class="product">
             <div class="info">
-                <span class="title"><?= translateText('Name: ') . htmlspecialchars($customerDetail['name']); ?></span>
+                <span class="title"><?= translateText('Name: ') . strip_tags($customerDetail['name']); ?></span>
                 <br>
-                <span class="description"><?= translateText('Contact: ') . htmlspecialchars($customerDetail['contact']); ?></span>
+                <span class="description"><?= translateText('Contact: ') . strip_tags($customerDetail['contact']); ?></span>
                 <br>
-                <span class="price"><?= translateText('Comment: ') . htmlspecialchars($customerDetail['comment']);?></span>
+                <span class="price"><?= translateText('Comment: ') . strip_tags($customerDetail['comment']);?></span>
                 <br>
-                <span class="price"><?= translateText('Date: ') . htmlspecialchars($customerDetail['creation_date']);?></span>
+                <span class="price"><?= translateText('Date: ') . strip_tags($customerDetail['creation_date']);?></span>
                 <br>
             </div >
             <span><?= translateText('Total Price: ') . $customerDetail['price'].getCurrency() ?></span>
