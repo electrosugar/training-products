@@ -52,9 +52,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         <input type="text" placeholder="<?= translateText('Password')?>" name="password" class="loginInputs" value="">
         <input type="submit" class="loginInputs" value="Login">
         <a href="index.php"><?= translateText('Anonymous User')?></a>
-        <?= $userError ? translateText($userError) : ''?>
-        <?= $passwordError ? translateText($passwordError) : ''?>
-        <?= $loginError ? translateText($loginError) : ''?>
+        <?= isset($userError) ? translateText($userError) : ''?>
+        <?= isset($passwordError) ? translateText($passwordError) : ''?>
+        <?= isset($loginError) ? translateText($loginError) : ''?>
     </form>
 </div>
 </body>
