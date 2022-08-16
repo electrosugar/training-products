@@ -20,8 +20,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     if(isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()){
         if (isset($password) && password_verify($password, $user['password'])) {
             // Store data in session variables
+            // todo hash username and date to make timed sessions
             $_SESSION['loggedIn'] = true;
-            $_SESSION['id'] = password_hash($user['id'], PASSWORD_BCRYPT);
+            $_SESSION['id'] = $user['id'];
             $_SESSION['username'] = $username;
             // Redirect user to products page
             header('location: products.php');
