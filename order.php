@@ -19,6 +19,7 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
             $selectPrice =  $databaseConnection->prepare('select * from products where id = ?');
             $selectPrice->execute([$productId['id_product']]);
             $productArray[] = $selectPrice->fetch();
+
             $price += $productArray[$productPriceIndex]['price'];
             $productPriceIndex += 1;
         }
