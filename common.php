@@ -84,7 +84,7 @@ function getProducts($page){
     $products = [];
     if (isset($fetchedProducts) && $fetchedProducts) {
         foreach($fetchedProducts as $fetchedProduct) {
-            array_push($products,$fetchedProduct);
+            $products[] = $fetchedProduct;
         }
     }
     return $products;
@@ -113,3 +113,25 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){
     }
     return $updateColumns;
 }
+
+ function prepareOrderWithProducts($row, & $customers ){
+     $databaseConnection = getDatabaseConnection();
+     $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
+     if($selectProductIds){
+         $selectProductIds->execute([$row['id']]);
+         $price = 0;
+         $productArray = [];
+         $productPriceIndex = 0;
+         while($productId = $selectProductIds->fetch()) {
+             $selectPrice =  $databaseConnection->prepare('select * from products where id = ?');
+             $selectPrice->execute([$productId['id_product']]);
+             $productArray[] = $selectPrice->fetch();
+
+             $price += $productArray[$productPriceIndex]['price'];
+             $productPriceIndex += 1;
+         }
+         $row['price'] = $price;
+         $row['productArray'] = $productArray;
+         $customers[] = $row;
+     }
+ }

@@ -9,25 +9,9 @@ $selectAllCustomers->execute();
 $customers = [];
 $productArray = [];
 foreach($selectAllCustomers->fetchAll() as $row ) {
-    $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
-    if($selectProductIds){
-        $selectProductIds->execute( [$row['id']]);
-        $price = 0;
-        $productArray = [];
-        $productPriceIndex = 0;
-        while($productId = $selectProductIds->fetch()) {
-            $selectPrice =  $databaseConnection->prepare('select * from products where id = ?');
-            $selectPrice->execute([$productId['id_product']]);
-            $productArray[] = $selectPrice->fetch();
-
-            $price += $productArray[$productPriceIndex]['price'];
-            $productPriceIndex += 1;
-        }
-        $row['price'] = $price;
-        $row['productArray'] = $productArray;
-        $customers[] = $row;
-    }
+    prepareOrderWithProducts($row, $customers);
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,13 +28,13 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
         <div class="order">
             <div class="product">
                 <div class="info">
-                    <span class="title"><?php echo translateText('Name: ') . htmlspecialchars($customerDetail['name']); ?></span>
+                    <span class="title"><?php echo translateText('Name: ') . strip_tags($customerDetail['name']); ?></span>
                     <br>
-                    <span class="description"><?php echo translateText('Contact: ') . htmlspecialchars($customerDetail['contact']); ?></span>
+                    <span class="description"><?php echo translateText('Contact: ') . strip_tags($customerDetail['contact']); ?></span>
                     <br>
-                    <span class="price"><?php echo translateText('Comment: ') . htmlspecialchars($customerDetail['comment']);?></span>
+                    <span class="price"><?php echo translateText('Comment: ') . strip_tags($customerDetail['comment']);?></span>
                     <br>
-                    <span class="date"><?php echo translateText('Date: ') . htmlspecialchars($customerDetail['creation_date']);?></span>
+                    <span class="date"><?php echo translateText('Date: ') . strip_tags($customerDetail['creation_date']);?></span>
                     <br>
                 </div >
                 <span><?php echo translateText('Total Price: ') . $customerDetail['price'].getCurrency() ?></span>
