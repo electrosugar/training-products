@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             prepareOrderWithProducts($customerInfo, $customers);
             //$mailMessage = 'Content-Type: text/html; charset=UTF-8'. PHP_EOL.'Content-Transfer-Encoding: 7bit'.PHP_EOL;
-            $mailMessage .= '<html><body>';
+            $mailMessage = '<html><body>';
 
 
             foreach ($customers as $customerDetail){
