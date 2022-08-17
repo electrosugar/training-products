@@ -42,7 +42,7 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
             <div class="selectedProducts">
                 <?php foreach ($customerDetail['productArray'] as $product): ?>
                     <div class="product">
-                        <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" height="100px" width="100px">
+                        <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" class="roundImage">
                         <div class="info">
                             <span class="title"><?= strip_tags($product['title']); ?></span>
                             <br>
@@ -52,15 +52,13 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
                             <br>
                         </div >
                     </div>
-                    <br>
                 <?php endforeach ?>
             </div>
         </div>
-        <br>
     <?php endforeach ?>
-    <a href="cart.php">Go to cart</a>
-    <a href="cart.php">Go to index</a>
-</div>
 
+</div>
+<a href="cart.php">Go to cart</a>
+<a href="cart.php">Go to index</a>
 </body>
 </html>
