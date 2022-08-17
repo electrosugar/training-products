@@ -20,7 +20,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     if(isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()){
         if (isset($password) && password_verify($password, $user['password'])) {
             // Store data in session variables
-            // todo hash username and date to make timed sessions
             $_SESSION['loggedIn'] = true;
             $_SESSION['id'] = $user['id'];
             $_SESSION['username'] = $username;
@@ -48,8 +47,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 <div class="loginBody">
     <form class="login" method="post" action="login.php" >
         <h1>Login</h1>
-        <input type="text" placeholder="<?= translateText('Username')?>" name="username" class="loginInputs" value="">
-        <input type="text" placeholder="<?= translateText('Password')?>" name="password" class="loginInputs" value="">
+        <input type="text" placeholder="<?= translateText('Username')?>" name="username" class="loginInputs" value="<?= $value = isset($_POST['username'])?$_POST['username']:''; ?>">
+        <input type="password" placeholder="<?= translateText('Password')?>" name="password" class="loginInputs" value="">
         <input type="submit" class="loginInputs" value="Login">
         <a href="index.php"><?= translateText('Anonymous User')?></a>
         <?= isset($userError) ? translateText($userError) : ''?>
