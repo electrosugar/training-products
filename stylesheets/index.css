@@ -2,26 +2,44 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-.product{
-    border:2px solid black;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 1em;
-    margin: 1em;
+    background-color : whitesmoke;
 }
 .products{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+.orders{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.product{
+    padding: 2em;
+    margin: 2em;
+    line-height: 1.4;
+    border-radius: 4px;
+    justify-self: center;
+    align-self: center;
     display: flex;
     flex-direction: row;
     align-items: center;
-    flex-wrap: wrap;
+    background: ghostwhite;
+    box-shadow: 3px 3px 3px #888888, -3px -3px 3px white;
 }
+
+.roundImage{
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    box-shadow: 3px 3px 3px #888888, -3px -3px 3px white;
+}
+
 .info{
     text-align:left;
+    font-family: "Trebuchet MS", sans-serif;
     padding: 1em;
     margin: 1em;
-    border:2px dashed black;
+    box-shadow: 3px 3px 3px #888888, -3px -3px 3px white;
 }
 .form{
     display:flex;
@@ -54,19 +72,16 @@ body{
 }
 
 .order{
-    border: 5px solid dodgerblue;
-    padding: 1em;
-    margin: 4em;
+    box-shadow: 3px 3px 3px #888888, -3px -3px 3px white;
+    background: #a7a6ff;
+    margin: 1em;
     display: flex;
     flex-direction: column;
     align-items: center;
+
 }
 
 .selectedProducts{
-    border: 5px solid lightseagreen;
-    padding: 1em;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr;
 }
