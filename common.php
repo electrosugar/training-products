@@ -123,7 +123,7 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){
          $productArray = [];
          $productPriceIndex = 0;
          while($productId = $selectProductIds->fetch()) {
-             $selectPrice =  $databaseConnection->prepare('select * from products where id = ?');
+             $selectPrice =  $databaseConnection->prepare('select * from old_products where id = ?');
              $selectPrice->execute([$productId['id_product']]);
              $productArray[] = $selectPrice->fetch();
 
