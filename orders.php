@@ -13,7 +13,7 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
         $selectProductIds->execute( [$row['id']]);
         $price = 0;
         while($productId = $selectProductIds->fetch()) {
-            $selectPrice =  $databaseConnection->prepare('select title, price from products where id = ?');
+            $selectPrice =  $databaseConnection->prepare('select title, price from old_products where id = ?');
             $selectPrice->execute([$productId['id_product']]);
             $price += $selectPrice->fetch()['price'];
         }
@@ -47,11 +47,9 @@ foreach($selectAllCustomers->fetchAll() as $row ) {
             </div >
             <span><?= translateText('Total Price: ') . $customerDetail['price'].getCurrency() ?></span>
         </div>
-        <br>
     <?php endforeach ?>
-    <a href="cart.php"><?= translateText('Go to cart ') ?></a>
-    <a href="order.php"><?= translateText('Advanced Orders ') ?></a>
 </div>
-
+<a href="cart.php"><?= translateText('Go to cart ') ?></a>
+<a href="order.php"><?= translateText('Advanced Orders ') ?></a>
 </body>
 </html>
