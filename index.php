@@ -28,7 +28,7 @@ $products = getProducts('index');
   <div class="products">
       <?php foreach ($products as $product): ?>
        <div class="product">
-          <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" height="100px" width="100px">
+          <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image" class="roundImage">
           <div class="info">
               <span class="title"><?= strip_tags($product['title']); ?></span>
               <br>
@@ -41,11 +41,9 @@ $products = getProducts('index');
                <button type="submit" value="<?= strip_tags($product['id']); ?>" name='add'><?= translateText('Add')?></button>
            </form>
        </div>
-      <br>
       <?php endforeach ?>
-      <a href="cart.php"><?= translateText(' Go to cart '); ?></a>
-      <a href="login.php"><?= translateText(' Log in ')?></a>
   </div>
-
+  <a href="cart.php"><?= translateText(' Go to cart '); ?></a>
+  <a href="login.php"><?= translateText(' Log in ')?></a>
   </body>
 </html>
