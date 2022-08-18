@@ -26,10 +26,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $insertCustomers = $pdoConnection->prepare('INSERT INTO customers (creation_date, name, contact, comment) VALUES (now(), ?, ?, ?)');
             $insertCustomers->execute([$name, $contact, $comment]);
             $idCustomer = $pdoConnection->lastInsertId();
+            $insertOrder = $pdoConnection->prepare('INSERT INTO orders (id_customer, id_product, id_old_product) VALUES ( ?, ?, ?)');
 
-            $insertOrder = $pdoConnection->prepare('INSERT INTO orders (id_customer, id_product) VALUES ( ?, ?)');
+            $selectProduct = $pdoConnection->prepare('SELECT * from products where id = ?');
+            $selectOldProduct = $pdoConnection->prepare('SELECT * from old_products  where title = ? and description = ? and price = ?');
+            $insertOldProduct = $pdoConnection->prepare('INSERT INTO old_products (title, description, price) VALUES ( ?, ?, ?)');
+
             foreach($_SESSION['cart'] as $idProduct){
-                $insertOrder->execute([$idCustomer, $idProduct]);
+                //insert the id_product from the old_products table but only if the product is changed and you need to create a new id in the old products table otherwise use what you already have
+                //select from db old_products
+                $selectProduct -> execute([$idProduct]);
+                $selectedProduct = $selectProduct->fetch();
+                $selectOldProduct -> execute([$selectedProduct['title'], $selectedProduct['description'], $selectedProduct['price']]);
+                $oldProduct = $selectOldProduct->fetch();
+                if($oldProduct['id'] === $idProduct){
+                    $insertOrder->execute([$idCustomer, $idProduct, $idProduct]);
+                }
+                else{
+                    $insertOldProduct->execute([$selectedProduct['title'], $selectedProduct['description'], $selectedProduct['price']]);
+                    $target_dir = 'images/';
+                    $source = $target_dir . $idProduct . '.png';
+                    $destination = $target_dir .$pdoConnection->lastInsertId(). 'OLD.png';
+                    copy($source, $destination);
+                    $insertOrder->execute([$idCustomer, $idProduct, $pdoConnection->lastInsertId()]);
+                }
+                //any product added to products is added to old products as well
             }
 
             //send email
@@ -55,49 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mailMessage .= 'Content-Type: text/html; charset=UTF-8'.PHP_EOL.
                             'Content-Transfer-Encoding: 7bit'.PHP_EOL.PHP_EOL;
             $mailMessage .= '<html>';
-            $mailMessage .= '<head><style>
-                                    body{
-                                        display: flex;
-                                        flex-direction: column;
-                                        align-items: center;
-                                    }
-                                    .product{
-                                        border:2px solid black;
-                                        display: flex;
-                                        flex-direction: row;
-                                        align-items: center;
-                                        padding: 1em;
-                                        margin: 1em;
-                                    }
-                                    .products{
-                                        display: flex;
-                                        flex-direction: row;
-                                        align-items: center;
-                                        flex-wrap: wrap;
-                                    }
-                                    .info{
-                                        text-align:left;
-                                        padding: 1em;
-                                        margin: 1em;
-                                        border:2px dashed black;
-                                    }
-                                    .order{
-                                        border: 5px solid dodgerblue;
-                                        padding: 1em;
-                                        margin: 4em;
-                                        display: flex;
-                                        flex-direction: column;
-                                        align-items: center;
-                                    }
-                                    
-                                    .selectedProducts{
-                                        border: 5px solid lightseagreen;
-                                        padding: 1em;
-                                        display: flex;
-                                        flex-direction: row;
-                                        align-items: center;
-                                        flex-wrap: wrap;
-                                    }</style> </head>';
+            $mailMessage .= '<head><style>'.file_get_contents('stylesheets/index.css').'</style> </head>';
             $mailMessage .= '<body>';
             foreach ($customer as $customerDetail){
                 $mailMessage .= '<div class="order">';
@@ -117,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $mailMessage .= '<div class="selectedProducts">';
                 foreach ($customerDetail['productArray'] as $product){
                     $mailMessage .= '<div class="product">';
-                    $mailMessage .= '<img src="cid:'.$product['id'].'.png" width="100px" height="100px">';
+                    $mailMessage .= '<img src="cid:'.$product['id'].'.png" class="roundImage">';
                     $mailMessage .= '<div class="info">';
                     $mailMessage .= '<span class="title">' .strip_tags($product['title']). '</span>';
                     $mailMessage .= '<br>';
@@ -138,7 +117,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mailMessage .= '</body></html>'.PHP_EOL.PHP_EOL.$bound;
             foreach ($customer as $customerDetail){
                 foreach ($customerDetail['productArray'] as $product){
-                    $productImage = file_get_contents('images/'.$product['id'].'.png');
+                    if(file_exists('images/'.$product['id'].'OLD.png')){
+                        $productImage = file_get_contents('images/'.$product['id'].'OLD.png');
+                    }
+                    else{
+                        $productImage = file_get_contents('images/'.$product['id_product'].'.png');
+                    }
                     $productImageData = base64_encode($productImage);
                     $mailMessage .= 'Content-Type: image/png; name="'. $product['id'].'.png"'.PHP_EOL
                         .'Content-Transfer-Encoding: base64'.PHP_EOL
@@ -150,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             $mailMessage .= $boundaryFinal;
-
+            header('Location: order.php?showOrder='.$idCustomer);
             mail($mailTo, $mailSubject, $mailMessage, $mailHeaders) ;
 
 
@@ -191,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit" value="<?= strip_tags($product['id']); ?>" name='remove'><?= translateText('Remove')?></button>
             </form>
         </div>
-        <br>
     <?php endforeach ?>
 </div>
 <form action="cart.php" method="post" class="form">
