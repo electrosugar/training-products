@@ -29,15 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     else if(count($updateValues)===3 && is_uploaded_file($_FILES ['image'] ['tmp_name'])){
+        $target_dir = 'images/';
         $addProduct = $pdoConnection->prepare('INSERT into products(title, description, price) VALUES (?, ?, ?)');
+        $addOldProduct = $pdoConnection->prepare('INSERT into old_products(title, description, price) VALUES (?, ?, ?)');
         if($addProduct->execute($updateValues)){
             echo 'Successful Product Insert!';
         }
-        $target_dir = 'images/';
         $target_file = $target_dir . $pdoConnection->lastInsertId() . '.png';
+        $addOldProduct->execute($updateValues);
+        $old_file = $target_dir . $pdoConnection->lastInsertId() . 'OLD.png';
         if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
             echo 'The file '. strip_tags(basename($_FILES['image']['name'])). ' has been uploaded.';
         }
+        copy($target_file, $old_file);
     }
     else{
         echo 'To add an item complete all fields';
@@ -53,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Product</title>
+    <title>Add or Edit Product</title>
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
