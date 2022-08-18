@@ -116,7 +116,7 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){
 
  function prepareOrderWithProducts($row, & $customers ){
      $databaseConnection = getDatabaseConnection();
-     $selectProductIds = $databaseConnection->prepare('select id_product from orders where id_customer = ?');
+     $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product from orders where id_customer = ?');
      if($selectProductIds){
          $selectProductIds->execute([$row['id']]);
          $price = 0;
@@ -124,13 +124,15 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){
          $productPriceIndex = 0;
          while($productId = $selectProductIds->fetch()) {
              $selectPrice =  $databaseConnection->prepare('select * from old_products where id = ?');
-             $selectPrice->execute([$productId['id_product']]);
+             $selectPrice->execute([$productId['id_old_product']]);
              $productArray[] = $selectPrice->fetch();
-
+             $productArray[$productPriceIndex]['id_product'] = $productId['id_product'];
              $price += $productArray[$productPriceIndex]['price'];
              $productPriceIndex += 1;
+
          }
          $row['price'] = $price;
+         //is this push
          $row['productArray'] = $productArray;
          $customers[] = $row;
      }
