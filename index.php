@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     if (!in_array(strip_tags($_POST['add']), $_SESSION['cart'])) {
         array_push($_SESSION['cart'], strip_tags($_POST['add']));
-        header("Refresh:0");
+        header('Refresh:0');
     }
 }
 $products = getProducts('index');
