@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         elseif (($key = array_search($_POST['remove'], $_SESSION['cart'])) !== false) {
             unset($_SESSION['cart'][$key]);
-            header("Refresh:0");
+            header('Refresh:0');
         }
     }
 
