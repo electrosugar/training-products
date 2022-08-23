@@ -14,8 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password = trim($_POST['password']);
     }
 
-    $userLoginConnection = getDatabaseConnection();
-    $userLogin = $userLoginConnection->prepare('SELECT id,username,password from users where username= ?');
+    $userLogin = $pdoConnection->prepare('SELECT id,username,password from users where username= ?');
     if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
         if (isset($password) && password_verify($password, $user['password'])) {
             // Store data in session variables
@@ -43,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="loginBody">
+
     <form class="login" method="post" action="login.php">
         <h1>Login</h1>
         <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
