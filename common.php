@@ -2,97 +2,72 @@
 
 require_once 'config.php';
 session_start();
-
-function getDatabaseConnection(){
-    $dsn = 'mysql:host='.SERVER_NAME.';dbname='.DATABASE_NAME.';';
+$pdoConnection = getDatabaseConnection();
+function getDatabaseConnection()
+{
+    $dsn = 'mysql:host=' . SERVER_NAME . ';dbname=' . DATABASE_NAME . ';';
     $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         //to prevent some edge case sql injections
-        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::ATTR_EMULATE_PREPARES => false,
     ];
     try {
-         $pdo = new PDO($dsn, USER, PASSWORD, $options);
-         return $pdo;
+        $pdo = new PDO($dsn, USER, PASSWORD, $options);
+        return $pdo;
     } catch (\PDOException $e) {
-         throw new \PDOException($e->getMessage(), (int)$e->getCode());
+        throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
 }
 
-function getCurrency(){
+function getCurrency()
+{
     return '$';
 }
 
 
-//fetches specific products, where page specifies the select type for each page(all, cart or index)
-//cart = all cart products, index = all products not in the cart
-function fetchProducts($pdoConnection, $page){
+function fetchQueryMarks()
+{
     $queryMarks = '?';
-    if(isset($_SESSION['cart'])){
-        if(count($_SESSION['cart']) === 0){
+    if (isset($_SESSION['cart'])) {
+        if (count($_SESSION['cart']) === 0) {
             $queryMarks = '';
-        }elseif (count($_SESSION['cart']) > 1) {
-            $queryMarks = $queryMarks . str_repeat(',?', count($_SESSION['cart'])-1);
+        } elseif (count($_SESSION['cart']) > 1) {
+            $queryMarks = $queryMarks . str_repeat(',?', count($_SESSION['cart']) - 1);
         }
-    }else{
+    } else {
         $queryMarks = '';
     }
-switch ($page){
-    case 'cart':
-        if($queryMarks){
-            $selectProducts = 'SELECT * from products where id in ('.$queryMarks.')';
-        }
-        else {
-            $selectProducts = 'SELECT * from products where id != id';
-        }
-        break;
-    case 'index':
-        if($queryMarks){
-            $selectProducts = 'SELECT * from products where not id in ('.$queryMarks.')';
-        }
-        else{
-            $selectProducts = 'SELECT * from products';
-        }
-        break;
-    case 'all': {
-        $selectProducts = 'SELECT * from products';
-    }
-        break;
-    default: {
-        $selectProducts = 'SELECT * from products';
-    }
+
+    return $queryMarks;
 }
 
-if($queryMarks){
-    $statementSelectProducts = $pdoConnection->prepare($selectProducts);
-    //the SESSION cart array can have indexes with no values that crash this function
-    $statementSelectProducts->execute(array_values($_SESSION['cart']));
-}
-else{
-    $statementSelectProducts = $pdoConnection->query($selectProducts);
-}
-$fetchedProducts = $statementSelectProducts->fetchAll();
-return $fetchedProducts;
-}
-
-//the page parameter is used to denote what kind of select indexes are fetched (in cart, in index, all)
-function getProducts($page){
-    $pdoConnection = getDatabaseConnection();
-    $fetchedProducts = fetchProducts($pdoConnection, $page);
+//fetches and array of products from the supplied query
+function getProductsArray($queryMarks, $pdoConnection, $selectProducts)
+{
+    if ($queryMarks) {
+        $statementSelectProducts = $pdoConnection->prepare($selectProducts);
+        $statementSelectProducts->execute(array_values($_SESSION['cart']));
+    } else {
+        $statementSelectProducts = $pdoConnection->query($selectProducts);
+    }
+    $fetchedProducts = $statementSelectProducts->fetchAll();
     $products = [];
     if (isset($fetchedProducts) && $fetchedProducts) {
-        foreach($fetchedProducts as $fetchedProduct) {
+        foreach ($fetchedProducts as $fetchedProduct) {
             $products[] = $fetchedProduct;
         }
     }
     return $products;
 }
 
-function translateText($text, $language='english'){
+function translateText($text, $language = 'english')
+{
     return $text;
 }
 
-function logout(){
+function logout()
+{
     session_start();
     session_unset();
     session_destroy();
@@ -100,39 +75,40 @@ function logout(){
     die();
 }
 
-function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){
-    if(isset($_POST[$columnName]) && !empty($_POST[$columnName])){
+function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
+{
+    if (isset($_POST[$columnName]) && !empty($_POST[$columnName])) {
         $updateValues[] = $_POST[$columnName];
-        if($updateColumns){
-            $updateColumns .= ', '.$columnName.' = ?';
-        }
-        else {
-            $updateColumns = $columnName.' = ?';
+        if ($updateColumns) {
+            $updateColumns .= ', ' . $columnName . ' = ?';
+        } else {
+            $updateColumns = $columnName . ' = ?';
         }
     }
     return $updateColumns;
 }
 
- function prepareOrderWithProducts($row, & $customers ){
-     $databaseConnection = getDatabaseConnection();
-     $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product from orders where id_customer = ?');
-     if($selectProductIds){
-         $selectProductIds->execute([$row['id']]);
-         $price = 0;
-         $productArray = [];
-         $productPriceIndex = 0;
-         while($productId = $selectProductIds->fetch()) {
-             $selectPrice =  $databaseConnection->prepare('select * from old_products where id = ?');
-             $selectPrice->execute([$productId['id_old_product']]);
-             $productArray[] = $selectPrice->fetch();
-             $productArray[$productPriceIndex]['id_product'] = $productId['id_product'];
-             $price += $productArray[$productPriceIndex]['price'];
-             $productPriceIndex += 1;
+function prepareOrderWithProducts($row, & $customers)
+{
+    $databaseConnection = getDatabaseConnection();
+    $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product from orders where id_customer = ?');
+    if ($selectProductIds) {
+        $selectProductIds->execute([$row['id']]);
+        $price = 0;
+        $productArray = [];
+        $productPriceIndex = 0;
+        while ($productId = $selectProductIds->fetch()) {
+            $selectPrice = $databaseConnection->prepare('select * from old_products where id = ?');
+            $selectPrice->execute([$productId['id_old_product']]);
+            $productArray[] = $selectPrice->fetch();
+            $productArray[$productPriceIndex]['id_product'] = $productId['id_product'];
+            $price += $productArray[$productPriceIndex]['price'];
+            $productPriceIndex += 1;
 
-         }
-         $row['price'] = $price;
-         //is this push
-         $row['productArray'] = $productArray;
-         $customers[] = $row;
-     }
- }
+        }
+        $row['price'] = $price;
+        //is this push
+        $row['productArray'] = $productArray;
+        $customers[] = $row;
+    }
+}
