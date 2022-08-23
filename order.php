@@ -5,8 +5,7 @@ require_once 'common.php';
 $customers = [];
 $customer = [];
 if (isset($_GET['showOrder'])) {
-    $databaseConnection = getDatabaseConnection();
-    $selectCustomer = $databaseConnection->prepare('select * from customers where id = ?');
+    $selectCustomer = $pdoConnection->prepare('select * from customers where id = ?');
     $selectCustomer->execute([strip_tags($_GET['showOrder'])]);
 
     $row = $selectCustomer->fetch();
