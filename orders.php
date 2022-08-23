@@ -1,8 +1,7 @@
 <?php
 
 require_once 'common.php';
-$databaseConnection = getDatabaseConnection();
-$selectAllCustomers = $databaseConnection->prepare('select * from customers');
+$selectAllCustomers = $pdoConnection->prepare('select * from customers');
 $selectAllCustomers->execute();
 
 $customers = [];
