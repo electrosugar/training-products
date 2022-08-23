@@ -1,23 +1,22 @@
 <?php
 
 require_once 'common.php';
-session_start();
 
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    if(empty(trim($_POST['username']))){
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (empty(trim($_POST['username']))) {
         $userError = 'Please enter username.';
-    } else{
+    } else {
         $username = trim($_POST['username']);
     }
-    if(empty(trim($_POST['password']))){
+    if (empty(trim($_POST['password']))) {
         $passwordError = 'Please enter your password.';
-    } else{
+    } else {
         $password = trim($_POST['password']);
     }
 
     $userLoginConnection = getDatabaseConnection();
     $userLogin = $userLoginConnection->prepare('SELECT id,username,password from users where username= ?');
-    if(isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()){
+    if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
         if (isset($password) && password_verify($password, $user['password'])) {
             // Store data in session variables
             $_SESSION['loggedIn'] = true;
@@ -25,8 +24,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             $_SESSION['username'] = $username;
             // Redirect user to products page
             header('location: products.php');
-        }
-        else {
+        } else {
             $loginError = 'Invalid username or password';
         }
     }
@@ -40,21 +38,27 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login</title>
+    <title><?= translateText('Login') ?></title>
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
 <div class="loginBody">
-    <form class="login" method="post" action="login.php" >
+    <form class="login" method="post" action="login.php">
         <h1>Login</h1>
-        <input type="text" placeholder="<?= translateText('Username')?>" name="username" class="loginInputs" value="<?= $value = isset($_POST['username'])?$_POST['username']:''; ?>">
-        <input type="password" placeholder="<?= translateText('Password')?>" name="password" class="loginInputs" value="">
+        <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
+               value="<?= $value = isset($_POST['username']) ? $_POST['username'] : ''; ?>">
+        <input type="password" placeholder="<?= translateText('Password') ?>" name="password" class="loginInputs"
+               value="">
         <input type="submit" class="loginInputs" value="Login">
-        <a href="index.php"><?= translateText('Anonymous User')?></a>
-        <?= isset($userError) ? translateText($userError) : ''?>
-        <?= isset($passwordError) ? translateText($passwordError) : ''?>
-        <?= isset($loginError) ? translateText($loginError) : ''?>
+        <a href="index.php"><?= translateText('Anonymous User') ?></a>
+        <?= isset($userError) ? translateText($userError) : '' ?>
+        <?= isset($passwordError) ? translateText($passwordError) : '' ?>
+        <?= isset($loginError) ? translateText($loginError) : '' ?>
     </form>
 </div>
 </body>
+<?php
+
+die();
+?>
 </html>

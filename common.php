@@ -1,24 +1,22 @@
 <?php
 
 require_once 'config.php';
+session_start();
 
 function getDatabaseConnection(){
-    if(!isset($pdo)){
-        $dsn = 'mysql:host='.SERVER_NAME.';dbname='.DATABASE_NAME.';';
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            //to prevent some edge case sql injections
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-        try {
-             $pdo = new PDO($dsn, USER, PASSWORD, $options);
-             return $pdo;
-        } catch (\PDOException $e) {
-             throw new \PDOException($e->getMessage(), (int)$e->getCode());
-        }
+    $dsn = 'mysql:host='.SERVER_NAME.';dbname='.DATABASE_NAME.';';
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        //to prevent some edge case sql injections
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    try {
+         $pdo = new PDO($dsn, USER, PASSWORD, $options);
+         return $pdo;
+    } catch (\PDOException $e) {
+         throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
-    return null;
 }
 
 function getCurrency(){
@@ -99,6 +97,7 @@ function logout(){
     session_unset();
     session_destroy();
     header('Location: login.php');
+    die();
 }
 
 function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName){

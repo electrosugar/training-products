@@ -1,7 +1,6 @@
 <?php
 
 require_once 'common.php';
-session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_SESSION['cart'])) {
@@ -9,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     if (!in_array(strip_tags($_POST['add']), $_SESSION['cart'])) {
         array_push($_SESSION['cart'], strip_tags($_POST['add']));
-        header('Refresh:0');
+        header('Location: index.php');
     }
 }
 $products = getProducts('index');
@@ -21,7 +20,7 @@ $products = getProducts('index');
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="X-UA-Compatible" content="ie=edge">
-      <title>Index</title>
+      <title><?= translateText('Index')?></title>
       <link rel="stylesheet" href="stylesheets/index.css">
   </head>
   <body>
