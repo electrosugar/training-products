@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['username'] = $username;
             // Redirect user to products page
             header('location: products.php');
+            die();
         } else {
             $loginError = 'Invalid username or password';
         }
