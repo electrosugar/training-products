@@ -41,7 +41,7 @@ foreach ($selectAllCustomers->fetchAll() as $row) {
                 <?php foreach ($customerDetail['productArray'] as $product): ?>
                     <div class="product">
                         <img src="images/<?= strip_tags($product['id']); ?>OLD.png"
-                             alt="'.<?= strip_tags($product['id']); ?>.'-image" class="roundImage">
+                             alt="<?= strip_tags($product['id']); ?>-image" class="roundImage">
                         <div class="info">
                             <span class="title"><?= strip_tags($product['title']); ?></span>
                             <br>
@@ -57,8 +57,8 @@ foreach ($selectAllCustomers->fetchAll() as $row) {
     <?php endforeach ?>
 
 </div>
-<a href="cart.php">Go to cart</a>
-<a href="cart.php">Go to index</a>
+<a href="cart.php"><?= translateText('Go to cart'); ?></a>
+<a href="index.php"><?= translateText('Go to index'); ?></a>
 </body>
 <?php
 
