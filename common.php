@@ -2,7 +2,6 @@
 
 require_once 'config.php';
 session_start();
-$pdoConnection = getDatabaseConnection();
 
 function getDatabaseConnection()
 {
