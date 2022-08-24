@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $password = trim($_POST['password']);
     }
-
+    $pdoConnection = getDatabaseConnection();
     $userLogin = $pdoConnection->prepare('SELECT id,username,password from users where username= ?');
     if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
         if (isset($password) && password_verify($password, $user['password'])) {
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <form class="login" method="post" action="login.php">
         <h1>Login</h1>
         <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
-               value="<?= $value = isset($_POST['username']) ? $_POST['username'] : ''; ?>">
+               value="<?= $value = isset($_POST['username']) ? $_POST['username'] : '' ?>">
         <input type="password" placeholder="<?= translateText('Password') ?>" name="password" class="loginInputs"
                value="">
         <input type="submit" class="loginInputs" value="Login">
