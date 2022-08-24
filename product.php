@@ -4,21 +4,29 @@ require_once 'common.php';
 if ((!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
     logout();
 }
+if (isset($_GET['productId'])) {
+    $_SESSION['productId'] = strip_tags($_GET['productId']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $productEditId = $_POST['id'];
     $updateValues = [];
     $updateMarks = '';
     addUpdateQueryColumns($updateValues, $updateMarks, 'title');
     addUpdateQueryColumns($updateValues, $updateMarks, 'description');
     addUpdateQueryColumns($updateValues, $updateMarks, 'price');
-    if (isset($productEditId) && $productEditId != 0) {
+    if (isset($_SESSION['productId'])) {
+        $productEditId = $_SESSION['productId'];
         if ($updateMarks) {
             $editProduct = $pdoConnection->prepare('UPDATE products SET ' . $updateMarks . ' where id = ?');
             $updateValues[] = $productEditId;
             if ($editProduct->execute($updateValues)) {
                 $success = 'Successful Edit!';
+                unset($_SESSION['productId']);
+            } else {
+                $failure = 'Failed Update!';
             }
+        } else {
+            $failure = 'No editing was done!';
         }
         $target_dir = 'images/';
         $target_file = $target_dir . $productEditId . '.png';
@@ -43,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $failure = 'To add an item complete all fields';
     }
 
-
 }
 
 ?>
@@ -57,9 +64,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
-<h1>Welcome <?= $_SESSION['username'] ?> !</h1>
+<h1><?= translateText('Welcome') . $_SESSION['username'] ?> !</h1>
+<h2><?= $value = isset($_SESSION['productId']) ? translateText('Editing Product #') . $_SESSION['productId'] : translateText('Creating New Product'); ?></h2>
 <form enctype="multipart/form-data" action="product.php" method="post" class="form">
-    <input type="hidden" value="<?= strip_tags($_GET['productId']); ?>" name="id"/>
     <input type="text" name="title" placeholder="<?= translateText('Product Title') ?>"
            value="<?= $value = isset($_POST['title']) ? $_POST['title'] : ''; ?>"><br>
     <input type="text" name="description" placeholder="<?= translateText('Description') ?>"
@@ -74,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?= isset($successFileUpload) ? translateText($successFileUpload) : '' ?>
 <?= isset($failure) ? translateText($failure) : '' ?>
 <?php
+
 die();
 ?>
 </body>
