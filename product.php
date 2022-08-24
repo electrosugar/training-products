@@ -7,6 +7,7 @@ if ((!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
 if (isset($_GET['productId'])) {
     $_SESSION['productId'] = strip_tags($_GET['productId']);
 }
+$pdoConnection = getDatabaseConnection();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $updateValues = [];
@@ -65,14 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <h1><?= translateText('Welcome') . $_SESSION['username'] ?> !</h1>
-<h2><?= $value = isset($_SESSION['productId']) ? translateText('Editing Product #') . $_SESSION['productId'] : translateText('Creating New Product'); ?></h2>
+<h2><?= $value = isset($_SESSION['productId']) ? translateText('Editing Product #') . $_SESSION['productId'] : translateText('Creating New Product') ?></h2>
 <form enctype="multipart/form-data" action="product.php" method="post" class="form">
     <input type="text" name="title" placeholder="<?= translateText('Product Title') ?>"
-           value="<?= $value = isset($_POST['title']) ? $_POST['title'] : ''; ?>"><br>
+           value="<?= $value = isset($_POST['title']) ? $_POST['title'] : '' ?>"><br>
     <input type="text" name="description" placeholder="<?= translateText('Description') ?>"
-           value="<?= $value = isset($_POST['description']) ? $_POST['description'] : ''; ?>" id="big"><br>
+           value="<?= $value = isset($_POST['description']) ? $_POST['description'] : '' ?>" id="big"><br>
     <input type="text" name="price" placeholder="<?= translateText('Price') ?> "
-           value="<?= $value = isset($_POST['price']) ? $_POST['price'] : ''; ?>"><br>
+           value="<?= $value = isset($_POST['price']) ? $_POST['price'] : '' ?>"><br>
     <input type="file" name="image" value=<?= translateText('Browse') ?>><br>
     <span class="formLinks"> <input type="submit" value="Save"></span>
 </form>
