@@ -3,6 +3,7 @@
 require_once 'config.php';
 session_start();
 $pdoConnection = getDatabaseConnection();
+
 function getDatabaseConnection()
 {
     $dsn = 'mysql:host=' . SERVER_NAME . ';dbname=' . DATABASE_NAME . ';';
@@ -58,6 +59,7 @@ function getProductsArray($queryMarks, $pdoConnection, $selectProducts)
             $products[] = $fetchedProduct;
         }
     }
+    $statementSelectProducts = null;
     return $products;
 }
 
@@ -107,8 +109,9 @@ function prepareOrderWithProducts($row, & $customers)
 
         }
         $row['price'] = $price;
-        //is this push
         $row['productArray'] = $productArray;
         $customers[] = $row;
     }
+    $selectPrice = null;
+    $selectProductIds = null;
 }
