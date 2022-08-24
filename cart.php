@@ -2,14 +2,13 @@
 
 require_once 'common.php';
 
+$pdoConnection = getDatabaseConnection();
 if ($queryMarks = fetchQueryMarks()) {
     $selectProducts = 'SELECT * from products where id in (' . $queryMarks . ')';
+    $products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
 } else {
-    $selectProducts = 'SELECT * from products where id != id';
+    $products = [];
 }
-$pdoConnection = getDatabaseConnection();
-
-$products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
 
 $selectProducts = 'SELECT * from products where id = ?';
 $statementSelectProducts = $pdoConnection->prepare($selectProducts);
@@ -20,7 +19,6 @@ foreach ($_SESSION['cart'] as $productId) {
     }
 }
 $statementSelectProducts = null;
-
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['remove'])) {
