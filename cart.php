@@ -7,6 +7,7 @@ if ($queryMarks = fetchQueryMarks()) {
 } else {
     $selectProducts = 'SELECT * from products where id != id';
 }
+$pdoConnection = getDatabaseConnection();
 
 $products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
 
@@ -177,18 +178,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']); ?>-image"
+            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']) ?>-image"
                  height="100px" width="100px">
             <div class="info">
-                <span class="title"><?= strip_tags($product['title']); ?></span>
+                <span class="title"><?= strip_tags($product['title']) ?></span>
                 <br>
-                <span class="description"><?= strip_tags($product['description']); ?></span>
+                <span class="description"><?= strip_tags($product['description']) ?></span>
                 <br>
-                <span class="price"><?= strip_tags($product['price'] . getCurrency()); ?></span>
+                <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
                 <br>
             </div>
             <form action="cart.php" method="post">
-                <button type="submit" value="<?= strip_tags($product['id']); ?>"
+                <button type="submit" value="<?= strip_tags($product['id']) ?>"
                         name="remove"><?= translateText('Remove') ?></button>
             </form>
         </div>
@@ -197,18 +198,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <form action="cart.php" method="post" class="form">
     <?= isset($orderError) ? translateText($orderError) : '' ?>
     <br>
-    <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name'); ?>"
-                                        value="<?= $value = isset($_POST['name']) ? $_POST['name'] : ''; ?>"><br>
+    <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name') ?>"
+                                        value="<?= $value = isset($_POST['name']) ? $_POST['name'] : '' ?>"><br>
     <?= translateText('Contact Details') ?> <input type="text" name="contact"
-                                                   placeholder="<?= translateText('Contact Details'); ?>"
-                                                   value="<?= $value = isset($_POST['contact']) ? $_POST['contact'] : ''; ?>"><br>
-    <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment'); ?>"
-                                           value="<?= $value = isset($_POST['comment']) ? $_POST['comment'] : ''; ?>"
+                                                   placeholder="<?= translateText('Contact Details') ?>"
+                                                   value="<?= $value = isset($_POST['contact']) ? $_POST['contact'] : '' ?>"><br>
+    <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment') ?>"
+                                           value="<?= $value = isset($_POST['comment']) ? $_POST['comment'] : '' ?>"
                                            id="big"><br>
     <span class="formLinks">
         <input type="submit" value="Checkout">
-        <a href="index.php"><?= translateText('Go to index'); ?></a>
-        <a href="orders.php"><?= translateText('Go to orders'); ?></a>
+        <a href="index.php"><?= translateText('Go to index') ?></a>
+        <a href="orders.php"><?= translateText('Go to orders') ?></a>
     </span>
 </form>
 <?php
