@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($fetchedProducts = $statementSelectProducts->fetchAll()) {
             array_push($_SESSION['cart'], strip_tags($_POST['add']));
             header('Location: index.php');
+            die();
         }
     }
 }
@@ -40,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="'.<?= strip_tags($product['id']); ?>.'-image"
+            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']); ?>-image"
                  class="roundImage">
             <div class="info">
                 <span class="title"><?= strip_tags($product['title']); ?></span>
@@ -57,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     <?php endforeach ?>
 </div>
-<a href="cart.php"><?= translateText(' Go to cart '); ?></a>
-<a href="login.php"><?= translateText(' Log in ') ?></a>
+<a href="cart.php"><?= translateText('Go to cart'); ?></a>
+<a href="login.php"><?= translateText('Log in') ?></a>
 </body>
 </html>
