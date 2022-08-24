@@ -7,7 +7,7 @@ if ($queryMarks = fetchQueryMarks()) {
 } else {
     $selectProducts = 'SELECT * from products';
 }
-
+$pdoConnection = getDatabaseConnection();
 $products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -41,24 +41,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']); ?>-image"
+            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']) ?>-image"
                  class="roundImage">
             <div class="info">
-                <span class="title"><?= strip_tags($product['title']); ?></span>
+                <span class="title"><?= strip_tags($product['title']) ?></span>
                 <br>
-                <span class="description"><?= strip_tags($product['description']); ?></span>
+                <span class="description"><?= strip_tags($product['description']) ?></span>
                 <br>
-                <span class="price"><?= strip_tags($product['price'] . getCurrency()); ?></span>
+                <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
                 <br>
             </div>
             <form action="index.php" method="post">
-                <button type="submit" value="<?= strip_tags($product['id']); ?>"
+                <button type="submit" value="<?= strip_tags($product['id']) ?>"
                         name="add"><?= translateText('Add') ?></button>
             </form>
         </div>
     <?php endforeach ?>
 </div>
-<a href="cart.php"><?= translateText('Go to cart'); ?></a>
+<a href="cart.php"><?= translateText('Go to cart') ?></a>
 <a href="login.php"><?= translateText('Log in') ?></a>
 </body>
 </html>
