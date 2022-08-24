@@ -27,7 +27,7 @@ if (isset($_GET['showOrder'])) {
 <body>
 <div class="orders">
     <div class="order">
-        <h1>The order #<?= strip_tags($customer['id']); ?> has been recorded</h1>
+        <h1><?= translateText('The order #') . strip_tags($customer['id']) . translateText('has been recorded'); ?> </h1>
         <div class="product">
             <div class="info">
                 <span class="title"><?= translateText('Name: ') . strip_tags($customer['name']); ?></span>
@@ -45,7 +45,7 @@ if (isset($_GET['showOrder'])) {
             <?php foreach ($customer['productArray'] as $product): ?>
                 <div class="product">
                     <img src="images/<?= strip_tags($product['id_product']); ?>.png"
-                         alt="'.<?= strip_tags($product['id_product']); ?>.'-image" class="roundImage">
+                         alt="<?= strip_tags($product['id_product']); ?>-image" class="roundImage">
                     <div class="info">
                         <span class="title"><?= strip_tags($product['title']); ?></span>
                         <br>
@@ -59,8 +59,8 @@ if (isset($_GET['showOrder'])) {
         </div>
     </div>
 </div>
-<a href="cart.php">Go to cart</a>
-<a href="cart.php">Go to index</a>
+<a href="cart.php"><?= translateText('Go to cart') ?></a>
+<a href="index.php"><?= translateText('Go to index') ?></a>
 </body>
 <?php
 
