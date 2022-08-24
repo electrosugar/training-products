@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $failure = 'Failed deleting record!';
         }
         header('Location: products.php');
+        die();
     }
 }
 
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 <?= isset($success) ? translateText($success) : '' ?>
 <?= isset($failure) ? translateText($failure) : '' ?>
-<h1>Welcome <?= $_SESSION['username'] ?> !</h1>
+<h1> <?= translateText('Welcome') . $_SESSION['username'] ?> !</h1>
 <?php foreach ($products as $product): ?>
     <div class="product">
         <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']); ?>-image"
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
     <br>
 <?php endforeach ?>
-<a href="product.php">Add product</a>
-<a href="?action=logout">Logout</a>
+<a href="product.php"><?= translateText('Add Product') ?> </a>
+<a href="?action=logout"><?= translateText('Logout') ?> </a>
 <?php
 
 die();

@@ -170,7 +170,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="products">
-    <?= isset($orderError) ? translateText($orderError) : '' ?>
 
     <?php foreach ($products as $product): ?>
         <div class="product">
@@ -192,6 +191,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php endforeach ?>
 </div>
 <form action="cart.php" method="post" class="form">
+    <?= isset($orderError) ? translateText($orderError) : '' ?>
+    <br>
     <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name'); ?>"
                                         value="<?= $value = isset($_POST['name']) ? $_POST['name'] : ''; ?>"><br>
     <?= translateText('Contact Details') ?> <input type="text" name="contact"
