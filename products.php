@@ -12,7 +12,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout' || (!isset($_SESSION['
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST)) {
         $deleteProduct = $pdoConnection->prepare('DELETE FROM products WHERE id=? LIMIT 1');
-        if ($deleteProduct->execute([$_POST['delete']]) === TRUE) {
+        if ($deleteProduct->execute([strip_tags($_POST['delete'])]) === TRUE) {
             $success = 'Record deleted successfully!';
         } else {
             $failure = 'Failed deleting record!';
@@ -38,20 +38,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <h1> <?= translateText('Welcome') . $_SESSION['username'] ?> !</h1>
 <?php foreach ($products as $product): ?>
     <div class="product">
-        <img src="images/<?= strip_tags($product['id']) ?>.png" alt="<?= strip_tags($product['id']) ?>-image"
+        <img src="images/<?= $product['id'] ?>.png" alt="<?= $product['id'] ?>-image"
              height="100px" width="100px">
         <div class="info">
-            <span class="title"><?= strip_tags($product['title']) ?></span>
+            <span class="title"><?= $product['title'] ?></span>
             <br>
-            <span class="description"><?= strip_tags($product['description']) ?></span>
+            <span class="description"><?= $product['description'] ?></span>
             <br>
-            <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
+            <span class="price"><?= $product['price'] . getCurrency() ?></span>
             <br>
         </div>
         <span>
-            <a href="product.php?productId=<?= strip_tags($product['id']) ?>"><?= translateText('Edit Items') ?></a>
+            <a href="product.php?productId=<?= $product['id'] ?>"><?= translateText('Edit Items') ?></a>
             <form action="products.php" method="post">
-                <button type="submit" value="<?= strip_tags($product['id']) ?>"
+                <button type="submit" value="<?= $product['id'] ?>"
                         name='delete'><?= translateText('Delete') ?></button>
             </form>
         </span>
