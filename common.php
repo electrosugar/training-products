@@ -79,7 +79,8 @@ function logout()
 function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
 {
     if (isset($_POST[$columnName]) && !empty($_POST[$columnName])) {
-        $updateValues[] = $_POST[$columnName];
+        //stripping tags from inputs
+        $updateValues[] = strip_tags($_POST[$columnName]);
         if ($updateColumns) {
             $updateColumns .= ', ' . $columnName . ' = ?';
         } else {
