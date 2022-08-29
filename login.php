@@ -3,15 +3,15 @@
 require_once 'common.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (empty(trim($_POST['username']))) {
+    if (empty(strip_tags($_POST['username']))) {
         $userError = 'Please enter username.';
     } else {
-        $username = trim($_POST['username']);
+        $username = strip_tags($_POST['username']);
     }
-    if (empty(trim($_POST['password']))) {
+    if (empty(strip_tags($_POST['password']))) {
         $passwordError = 'Please enter your password.';
     } else {
-        $password = trim($_POST['password']);
+        $password = strip_tags($_POST['password']);
     }
     $pdoConnection = getDatabaseConnection();
     $userLogin = $pdoConnection->prepare('SELECT id,username,password from users where username= ?');
