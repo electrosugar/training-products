@@ -12,6 +12,7 @@ $pdoConnection = getDatabaseConnection();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $updateValues = [];
     $updateMarks = '';
+    //strip tas from the post and creates a list of values and a string of ?, used in the prepared update statement
     addUpdateQueryColumns($updateValues, $updateMarks, 'title');
     addUpdateQueryColumns($updateValues, $updateMarks, 'description');
     addUpdateQueryColumns($updateValues, $updateMarks, 'price');
@@ -69,11 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <h2><?= $value = isset($_SESSION['productId']) ? translateText('Editing Product #') . $_SESSION['productId'] : translateText('Creating New Product') ?></h2>
 <form enctype="multipart/form-data" action="product.php" method="post" class="form">
     <input type="text" name="title" placeholder="<?= translateText('Product Title') ?>"
-           value="<?= $value = isset($_POST['title']) ? $_POST['title'] : '' ?>"><br>
+           value="<?= $value = isset($_POST['title']) ? strip_tags($_POST['title']) : '' ?>"><br>
     <input type="text" name="description" placeholder="<?= translateText('Description') ?>"
-           value="<?= $value = isset($_POST['description']) ? $_POST['description'] : '' ?>" id="big"><br>
+           value="<?= $value = isset($_POST['description']) ? strip_tags($_POST['description']) : '' ?>" id="big"><br>
     <input type="text" name="price" placeholder="<?= translateText('Price') ?> "
-           value="<?= $value = isset($_POST['price']) ? $_POST['price'] : '' ?>"><br>
+           value="<?= $value = isset($_POST['price']) ? strip_tags($_POST['price']) : '' ?>"><br>
     <input type="file" name="image" value=<?= translateText('Browse') ?>><br>
     <span class="formLinks"> <input type="submit" value="Save"></span>
 </form>
