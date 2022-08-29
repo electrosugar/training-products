@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <a href="product.php?productId=<?= $product['id'] ?>"><?= translateText('Edit Items') ?></a>
             <form action="products.php" method="post">
                 <button type="submit" value="<?= $product['id'] ?>"
-                        name='delete'><?= translateText('Delete') ?></button>
+                        name="delete"><?= translateText('Delete') ?></button>
             </form>
         </span>
     </div>
