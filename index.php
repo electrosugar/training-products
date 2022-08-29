@@ -41,18 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']) ?>-image"
+            <img src="images/<?= $product['id']; ?>.png" alt="<?= $product['id'] ?>-image"
                  class="roundImage">
             <div class="info">
-                <span class="title"><?= strip_tags($product['title']) ?></span>
+                <span class="title"><?= $product['title'] ?></span>
                 <br>
-                <span class="description"><?= strip_tags($product['description']) ?></span>
+                <span class="description"><?= $product['description'] ?></span>
                 <br>
-                <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
+                <span class="price"><?= $product['price'] . getCurrency() ?></span>
                 <br>
             </div>
             <form action="index.php" method="post">
-                <button type="submit" value="<?= strip_tags($product['id']) ?>"
+                <button type="submit" value="<?= $product['id'] ?>"
                         name="add"><?= translateText('Add') ?></button>
             </form>
         </div>
