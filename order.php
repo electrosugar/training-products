@@ -29,16 +29,16 @@ if (isset($_GET['showOrder'])) {
 <body>
 <div class="orders">
     <div class="order">
-        <h1><?= translateText('The order #') . strip_tags($customer['id']) . translateText('has been recorded'); ?> </h1>
+        <h1><?= translateText('The order #') . $customer['id'] . translateText('has been recorded'); ?> </h1>
         <div class="product">
             <div class="info">
-                <span class="title"><?= translateText('Name: ') . strip_tags($customer['name']) ?></span>
+                <span class="title"><?= translateText('Name: ') . $customer['name'] ?></span>
                 <br>
-                <span class="description"><?= translateText('Contact: ') . strip_tags($customer['contact']) ?></span>
+                <span class="description"><?= translateText('Contact: ') . $customer['contact'] ?></span>
                 <br>
-                <span class="price"><?= translateText('Comment: ') . strip_tags($customer['comment']) ?></span>
+                <span class="price"><?= translateText('Comment: ') . $customer['comment'] ?></span>
                 <br>
-                <span class="date"><?= translateText('Date: ') . strip_tags($customer['creation_date']) ?></span>
+                <span class="date"><?= translateText('Date: ') . $customer['creation_date'] ?></span>
                 <br>
             </div>
             <span><?= translateText('Total Price: ') . $customer['price'] . getCurrency() ?></span>
@@ -46,14 +46,14 @@ if (isset($_GET['showOrder'])) {
         <div class="selectedProducts">
             <?php foreach ($customer['productArray'] as $product): ?>
                 <div class="product">
-                    <img src="images/<?= strip_tags($product['id_product']) ?>.png"
-                         alt="<?= strip_tags($product['id_product']) ?>-image" class="roundImage">
+                    <img src="images/<?= $product['id_product'] ?>.png"
+                         alt="<?= $product['id_product'] ?>-image" class="roundImage">
                     <div class="info">
-                        <span class="title"><?= strip_tags($product['title']) ?></span>
+                        <span class="title"><?= $product['title'] ?></span>
                         <br>
-                        <span class="description"><?= strip_tags($product['description']) ?></span>
+                        <span class="description"><?= $product['description'] ?></span>
                         <br>
-                        <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
+                        <span class="price"><?= $product['price'] . getCurrency() ?></span>
                         <br>
                     </div>
                 </div>
