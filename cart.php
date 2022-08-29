@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['remove'])) {
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
-        } elseif (($key = array_search($_POST['remove'], $_SESSION['cart'])) !== false) {
+        } elseif (($key = array_search(strip_tags($_POST['remove']), $_SESSION['cart'])) !== false) {
             unset($_SESSION['cart'][$key]);
             header('Location: cart.php');
         }
@@ -176,18 +176,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="products">
     <?php foreach ($products as $product): ?>
         <div class="product">
-            <img src="images/<?= strip_tags($product['id']); ?>.png" alt="<?= strip_tags($product['id']) ?>-image"
+            <img src="images/<?= $product['id']; ?>.png" alt="<?= $product['id'] ?>-image"
                  height="100px" width="100px">
             <div class="info">
-                <span class="title"><?= strip_tags($product['title']) ?></span>
+                <span class="title"><?= $product['title'] ?></span>
                 <br>
-                <span class="description"><?= strip_tags($product['description']) ?></span>
+                <span class="description"><?= $product['description'] ?></span>
                 <br>
-                <span class="price"><?= strip_tags($product['price'] . getCurrency()) ?></span>
+                <span class="price"><?= $product['price'] . getCurrency() ?></span>
                 <br>
             </div>
             <form action="cart.php" method="post">
-                <button type="submit" value="<?= strip_tags($product['id']) ?>"
+                <button type="submit" value="<?= $product['id'] ?>"
                         name="remove"><?= translateText('Remove') ?></button>
             </form>
         </div>
@@ -197,12 +197,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?= isset($orderError) ? translateText($orderError) : '' ?>
     <br>
     <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name') ?>"
-                                        value="<?= $value = isset($_POST['name']) ? $_POST['name'] : '' ?>"><br>
+                                        value="<?= $value = isset($_POST['name']) ? strip_tags($_POST['name']) : '' ?>"><br>
     <?= translateText('Contact Details') ?> <input type="text" name="contact"
                                                    placeholder="<?= translateText('Contact Details') ?>"
-                                                   value="<?= $value = isset($_POST['contact']) ? $_POST['contact'] : '' ?>"><br>
+                                                   value="<?= $value = isset($_POST['contact']) ? strip_tags($_POST['contact']) : '' ?>"><br>
     <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment') ?>"
-                                           value="<?= $value = isset($_POST['comment']) ? $_POST['comment'] : '' ?>"
+                                           value="<?= $value = isset($_POST['comment']) ? strip_tags($_POST['comment']) : '' ?>"
                                            id="big"><br>
     <span class="formLinks">
         <input type="submit" value="Checkout">
