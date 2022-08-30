@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 <?= isset($success) ? translateText($success) : '' ?>
 <?= isset($failure) ? translateText($failure) : '' ?>
-<h1> <?= translateText('Welcome') . $_SESSION['username'] ?> !</h1>
+<h1> <?= translateText('Welcome back, ') . $_SESSION['username'] ?> !</h1>
 <?php foreach ($products as $product): ?>
     <div class="product">
         <img src="images/<?= $product['id'] ?>.png" alt="<?= $product['id'] ?>-image"
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
     <br>
 <?php endforeach ?>
-<a href="product.php"><?= translateText('Add Product') ?> </a>
+<a href="product.php?addProduct=true"><?= translateText('Add Product') ?> </a>
 <a href="?action=logout"><?= translateText('Logout') ?> </a>
 <?php
 

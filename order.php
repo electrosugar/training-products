@@ -6,13 +6,20 @@ $customers = [];
 $customer = [];
 $pdoConnection = getDatabaseConnection();
 
+
 if (isset($_GET['showOrder'])) {
     $selectCustomer = $pdoConnection->prepare('select * from customers where id = ?');
     $selectCustomer->execute([strip_tags($_GET['showOrder'])]);
 
     $row = $selectCustomer->fetch();
+
     prepareOrderWithProducts($row, $customers);
     $customer = $customers[0];
+    if(!$row){
+        resetCustomer($customers);
+    }
+}else{
+    resetCustomer($customers);
 }
 
 
@@ -49,11 +56,13 @@ if (isset($_GET['showOrder'])) {
                     <img src="images/<?= $product['id_product'] ?>.png"
                          alt="<?= $product['id_product'] ?>-image" class="roundImage">
                     <div class="info">
-                        <span class="title"><?= $product['title'] ?></span>
+                        <span class="title"><?=translateText('Title: ') . $product['title'] ?></span>
                         <br>
-                        <span class="description"><?= $product['description'] ?></span>
+                        <span class="description"><?=translateText('Description: ') . $product['description'] ?></span>
                         <br>
-                        <span class="price"><?= $product['price'] . getCurrency() ?></span>
+                        <span class="price"><?=translateText('Price: ') . $product['price'] . getCurrency() ?></span>
+                        <br>
+                        <span class="quantity"><?= translateText('Quantity: ') . $product['quantity'] ?></span>
                         <br>
                     </div>
                 </div>

@@ -93,7 +93,7 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
 function prepareOrderWithProducts($row, & $customers)
 {
     $databaseConnection = getDatabaseConnection();
-    $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product from orders where id_customer = ?');
+    $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product, quantity from orders where id_customer = ?');
     if ($selectProductIds) {
         $selectProductIds->execute([$row['id']]);
         $price = 0;
@@ -104,7 +104,8 @@ function prepareOrderWithProducts($row, & $customers)
             $selectPrice->execute([$productId['id_old_product']]);
             $productArray[] = $selectPrice->fetch();
             $productArray[$productPriceIndex]['id_product'] = $productId['id_product'];
-            $price += $productArray[$productPriceIndex]['price'];
+            $productArray[$productPriceIndex]['quantity'] = $productId['quantity'];
+            $price += $productArray[$productPriceIndex]['price'] * $productId['quantity'];
             $productPriceIndex += 1;
 
         }
@@ -114,4 +115,14 @@ function prepareOrderWithProducts($row, & $customers)
     }
     $selectPrice = null;
     $selectProductIds = null;
+}
+
+function resetCustomer(& $customer){
+    $customer['id'] = '';
+    $customer['name'] = '';
+    $customer['contact'] = '';
+    $customer['comment'] = '';
+    $customer['creation_date'] = '';
+    $customer['price'] = '';
+    $customer['productArray'] = [];
 }

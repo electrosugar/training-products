@@ -10,21 +10,49 @@ if ($queryMarks = fetchQueryMarks()) {
     $products = [];
 }
 
-$selectProducts = 'SELECT * from products where id = ?';
-$statementSelectProducts = $pdoConnection->prepare($selectProducts);
-foreach ($_SESSION['cart'] as $productId) {
-    $statementSelectProducts->execute([$productId]);
-    if (($key = array_search($productId, $_SESSION['cart'])) !== false && !$fetchedProducts = $statementSelectProducts->fetchAll()) {
-        unset($_SESSION['cart'][$key]);
+if (isset($_SESSION['cart'])) {
+    $selectProducts = 'SELECT * from products where id = ?';
+    $statementSelectProducts = $pdoConnection->prepare($selectProducts);
+    foreach ($_SESSION['cart'] as $productId) {
+        $statementSelectProducts->execute([$productId]);
+        if (($key = array_search($productId, $_SESSION['cart'])) !== false && !$fetchedProducts = $statementSelectProducts->fetchAll()) {
+            unset($_SESSION['cart'][$key]);
+        }
+    }
+    $statementSelectProducts = null;
+}
+
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $cartProductId) {
+        if (!isset($_SESSION['quantity'][$cartProductId])) {
+            $_SESSION['quantity'][$cartProductId] = 1;
+        }
     }
 }
-$statementSelectProducts = null;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['quantity'])) {
+        if (!isset($_SESSION['quantity'])) {
+            foreach ($_SESSION['cart'] as $cartProductId) {
+                $_SESSION['quantity'][$cartProductId] = 1;
+            }
+        } else {
+            if (empty($_POST['number']) || !filter_var($_POST['number'], FILTER_VALIDATE_INT) || !isset($_POST['number']) || $_POST['number'] <= 0 || $_POST['number'] >= 4294967295) {
+                $value = 1; // default value
+                $orderError = 'Invalid quantity entered!';
+            } else {
+                $value = strip_tags($_POST['number']);
+            }
+            $_SESSION['quantity'][strip_tags($_POST['quantity'])] = $value;
+        }
+    }
+
+
     if (isset($_POST['remove'])) {
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
         } elseif (($key = array_search(strip_tags($_POST['remove']), $_SESSION['cart'])) !== false) {
+            unset($_SESSION['quantity'][$_SESSION['cart'][$key]]);
             unset($_SESSION['cart'][$key]);
             header('Location: cart.php');
         }
@@ -39,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $insertCustomers = $pdoConnection->prepare('INSERT INTO customers (creation_date, name, contact, comment) VALUES (now(), ?, ?, ?)');
             $insertCustomers->execute([$name, $contact, $comment]);
             $idCustomer = $pdoConnection->lastInsertId();
-            $insertOrder = $pdoConnection->prepare('INSERT INTO orders (id_customer, id_product, id_old_product) VALUES ( ?, ?, ?)');
+            $insertOrder = $pdoConnection->prepare('INSERT INTO orders (id_customer, id_product, id_old_product, quantity) VALUES ( ?, ?, ?, ?)');
 
             $selectProduct = $pdoConnection->prepare('SELECT * from products where id = ?');
             $selectOldProduct = $pdoConnection->prepare('SELECT * from old_products  where title = ? and description = ? and price = ?');
@@ -53,14 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $selectOldProduct->execute([$selectedProduct['title'], $selectedProduct['description'], $selectedProduct['price']]);
                 $oldProduct = $selectOldProduct->fetch();
                 if ($oldProduct['id'] === $idProduct) {
-                    $insertOrder->execute([$idCustomer, $idProduct, $idProduct]);
+                    $insertOrder->execute([$idCustomer, $idProduct, $idProduct, $_SESSION['quantity'][$idProduct]]);
                 } else {
                     $insertOldProduct->execute([$selectedProduct['title'], $selectedProduct['description'], $selectedProduct['price']]);
-                    $target_dir = 'images/';
-                    $source = $target_dir . $idProduct . '.png';
-                    $destination = $target_dir . $pdoConnection->lastInsertId() . 'OLD.png';
+                    $targetDir = 'images/';
+                    $source = $targetDir . $idProduct . '.png';
+                    $destination = $targetDir . $pdoConnection->lastInsertId() . 'OLD.png';
                     copy($source, $destination);
-                    $insertOrder->execute([$idCustomer, $idProduct, $pdoConnection->lastInsertId()]);
+                    $insertOrder->execute([$idCustomer, $idProduct, $pdoConnection->lastInsertId(), $_SESSION['quantity'][$idProduct]]);
                 }
                 //any product added to products is added to old products as well
             }
@@ -110,11 +138,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $mailMessage .= '<div class="product">';
                     $mailMessage .= '<img src="cid:' . $product['id'] . '.png" class="roundImage">';
                     $mailMessage .= '<div class="info">';
-                    $mailMessage .= '<span class="title">' . strip_tags($product['title']) . '</span>';
+                    $mailMessage .= '<span class="title">' . translateText('Title: ') . strip_tags($product['title']) . '</span>';
                     $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="description">' . strip_tags($product['description']) . '</span>';
+                    $mailMessage .= '<span class="description">' . translateText('Description: ') . strip_tags($product['description']) . '</span>';
                     $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="price">' . strip_tags($product['price']) . getCurrency() . '</span>';
+                    $mailMessage .= '<span class="price">' . translateText('Price: ') . strip_tags($product['price']) * $product['quantity'] . getCurrency() . '</span>';
+                    $mailMessage .= '<br>';
+                    $mailMessage .= '<span class="quantity">' . translateText('Quantity: ') . strip_tags($product['quantity']) . '</span>';
+                    $mailMessage .= '<br>';
+                    $mailMessage .= '<span class="totalProductPrice">' . translateText('Price per item: ') . $product['price'] . getCurrency() . '</span>';
                     $mailMessage .= '<br>';
                     $mailMessage .= '</div>';
                     $mailMessage .= '</div>';
@@ -143,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         . $bound;
                 }
             }
-
+            unset($_SESSION['quantity']);
             $mailMessage .= $boundaryFinal;
             mail($mailTo, $mailSubject, $mailMessage, $mailHeaders);
             header('Location: order.php?showOrder=' . $idCustomer);
@@ -183,9 +215,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <br>
                 <span class="description"><?= $product['description'] ?></span>
                 <br>
-                <span class="price"><?= $product['price'] . getCurrency() ?></span>
+                <span class="price"><?= $product['price'] . getCurrency() . '*' . $value = isset($_SESSION['quantity'][strip_tags($product['id'])]) ? strip_tags($_SESSION['quantity'][strip_tags($product['id'])]) : '1' ?></span>
+                <span><?= '= ' . $product['price'] * $value = isset($_SESSION['quantity'][strip_tags($product['id'])]) ? strip_tags($_SESSION['quantity'][strip_tags($product['id'])]) : 1 ?></span>
                 <br>
+                <form action="cart.php" method="post">
+                    <label name="number">
+                        <?= translateText('Quantity:') . $value = isset($_SESSION['quantity'][strip_tags($product['id'])]) ? strip_tags($_SESSION['quantity'][strip_tags($product['id'])]) . '<br>' : ('1' . '<br>') ?>
+                    </label>
+                    <input type="number" id="number" name="number" min="1">
+                    <button type="submit" value="<?= $product['id'] ?>"
+                            name="quantity"><?= translateText('Update') ?></button>
+                </form>
             </div>
+
             <form action="cart.php" method="post">
                 <button type="submit" value="<?= $product['id'] ?>"
                         name="remove"><?= translateText('Remove') ?></button>
@@ -197,10 +239,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?= isset($orderError) ? translateText($orderError) : '' ?>
     <br>
     <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name') ?>"
-                                        value="<?= $value = isset($_POST['name']) ? strip_tags($_POST['name']) : '' ?>"><br>
+                                        value="<?= $value = isset($_POST['name']) ? strip_tags($_POST['name']) : '' ?>">
+    <br>
     <?= translateText('Contact Details') ?> <input type="text" name="contact"
                                                    placeholder="<?= translateText('Contact Details') ?>"
-                                                   value="<?= $value = isset($_POST['contact']) ? strip_tags($_POST['contact']) : '' ?>"><br>
+                                                   value="<?= $value = isset($_POST['contact']) ? strip_tags($_POST['contact']) : '' ?>">
+    <br>
     <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment') ?>"
                                            value="<?= $value = isset($_POST['comment']) ? strip_tags($_POST['comment']) : '' ?>"
                                            id="big"><br>

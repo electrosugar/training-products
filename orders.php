@@ -45,11 +45,13 @@ foreach ($selectAllCustomers->fetchAll() as $row) {
                         <img src="images/<?= $product['id'] ?>OLD.png"
                              alt="<?= $product['id'] ?>-image" class="roundImage">
                         <div class="info">
-                            <span class="title"><?= $product['title'] ?></span>
+                            <span class="title"><?=translateText('Title: ') . $product['title'] ?></span>
                             <br>
-                            <span class="description"><?= $product['description'] ?></span>
+                            <span class="description"><?=translateText('Description: ') . $product['description'] ?></span>
                             <br>
-                            <span class="price"><?= $product['price'] . getCurrency() ?></span>
+                            <span class="price"><?=translateText('Price: ') . $product['price'] . getCurrency() ?></span>
+                            <br>
+                            <span class="quantity"><?= translateText('Quantity: ') . $product['quantity'] ?></span>
                             <br>
                         </div>
                     </div>
