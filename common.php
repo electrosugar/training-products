@@ -47,7 +47,7 @@ function getProductsArray($queryMarks, $pdoConnection, $selectProducts)
 {
     if ($queryMarks) {
         $statementSelectProducts = $pdoConnection->prepare($selectProducts);
-        $statementSelectProducts->execute(array_values($_SESSION['cart']));
+        $statementSelectProducts->execute(array_keys($_SESSION['cart']));
     } else {
         $statementSelectProducts = $pdoConnection->query($selectProducts);
     }
@@ -90,39 +90,30 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
     return $updateColumns;
 }
 
-function prepareOrderWithProducts($row, & $customers)
+function prepareOrderWithProducts($row, & $orders)
 {
     $databaseConnection = getDatabaseConnection();
-    $selectProductIds = $databaseConnection->prepare('select id_product, id_old_product, quantity from orders where id_customer = ?');
+    $selectProductIds = $databaseConnection->prepare('SELECT id_product, quantity, price FROM order_product WHERE id_order = ?');
     if ($selectProductIds) {
         $selectProductIds->execute([$row['id']]);
         $price = 0;
         $productArray = [];
         $productPriceIndex = 0;
-        while ($productId = $selectProductIds->fetch()) {
-            $selectPrice = $databaseConnection->prepare('select * from old_products where id = ?');
-            $selectPrice->execute([$productId['id_old_product']]);
+        while ($order = $selectProductIds->fetch()) {
+            $selectPrice = $databaseConnection->prepare('SELECT * FROM products WHERE id = ?');
+            $selectPrice->execute([$order['id_product']]);
             $productArray[] = $selectPrice->fetch();
-            $productArray[$productPriceIndex]['id_product'] = $productId['id_product'];
-            $productArray[$productPriceIndex]['quantity'] = $productId['quantity'];
-            $price += $productArray[$productPriceIndex]['price'] * $productId['quantity'];
+            $productArray[$productPriceIndex]['id_product'] = $order['id_product'];
+            $productArray[$productPriceIndex]['quantity'] = $order['quantity'];
+            $productArray[$productPriceIndex]['price'] = $order['price'];
+            $price += $order['price'] * $order['quantity'];
             $productPriceIndex += 1;
 
         }
         $row['price'] = $price;
         $row['productArray'] = $productArray;
-        $customers[] = $row;
+        $orders[] = $row;
     }
     $selectPrice = null;
     $selectProductIds = null;
-}
-
-function resetCustomer(& $customer){
-    $customer['id'] = '';
-    $customer['name'] = '';
-    $customer['contact'] = '';
-    $customer['comment'] = '';
-    $customer['creation_date'] = '';
-    $customer['price'] = '';
-    $customer['productArray'] = [];
 }
