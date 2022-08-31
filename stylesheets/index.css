@@ -85,3 +85,12 @@ body{
     display: grid;
     grid-template-columns: 1fr;
 }
+
+.error{
+    text-underline: red;
+    color: red;
+}
+.success{
+    text-underline: forestgreen;
+    color: green;
+}

@@ -3,9 +3,9 @@
 require_once 'common.php';
 
 if ($queryMarks = fetchQueryMarks()) {
-    $selectProducts = 'SELECT * from products where not id in (' . $queryMarks . ')';
+    $selectProducts = 'SELECT * FROM products WHERE NOT id IN (' . $queryMarks . ')';
 } else {
-    $selectProducts = 'SELECT * from products';
+    $selectProducts = 'SELECT * FROM products';
 }
 $pdoConnection = getDatabaseConnection();
 $products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
@@ -14,18 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
-    if (!in_array(strip_tags($_POST['add']), $_SESSION['cart'])) {
-        $selectProducts = 'SELECT * from products where id = ?';
+    //check for duplicates so it doesnt add the same product id twice
+    if (!in_array($_POST['add'], $_SESSION['cart'])) {
+        $selectProducts = 'SELECT * FROM products WHERE id = ?';
         $statementSelectProducts = $pdoConnection->prepare($selectProducts);
-        $statementSelectProducts->execute([$_POST['add']]);
+        $productId = strip_tags($_POST['add']);
+
+        $statementSelectProducts->execute([$productId]);
         if ($fetchedProducts = $statementSelectProducts->fetchAll()) {
-            array_push($_SESSION['cart'], strip_tags($_POST['add']));
+            $_SESSION['cart'] += [$productId => 1];
             header('Location: index.php');
             die();
         }
     }
 }
-
 
 ?>
 <!DOCTYPE html>
@@ -52,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <br>
             </div>
             <form action="index.php" method="post">
-                <button type="submit" value="<?= $product['id'] ?>"
-                        name="add"><?= translateText('Add') ?></button>
+                <input type="hidden" name="add" value="<?= $product['id'] ?>">
+                <button type="submit"><?= translateText('Add') ?></button>
             </form>
         </div>
     <?php endforeach ?>
