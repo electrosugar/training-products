@@ -1,7 +1,7 @@
 <?php
 
 require_once 'common.php';
-$selectProducts = 'SELECT * from products';
+$selectProducts = 'SELECT * FROM products';
 $pdoConnection = getDatabaseConnection();
 $products = getProductsArray('', $pdoConnection, $selectProducts);
 
@@ -10,14 +10,23 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout' || (!isset($_SESSION['
     logout();
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST)) {
+    echo $_POST['delete'];
+    if (isset($_POST['delete'])) {
         $deleteProduct = $pdoConnection->prepare('DELETE FROM products WHERE id=? LIMIT 1');
         if ($deleteProduct->execute([strip_tags($_POST['delete'])]) === TRUE) {
-            $success = 'Record deleted successfully!';
+            $success['delete'] = 'Record deleted successfully!';
         } else {
-            $failure = 'Failed deleting record!';
+            $failure['delete'] = 'Failed deleting record!';
         }
         header('Location: products.php');
+        die();
+    }
+
+    if (isset($_POST['logout'])) {
+        unset($_SESSION['username']);
+        unset($_SESSION['id']);
+        unset($_SESSION['loggedIn']);
+        header('Location: index.php');
         die();
     }
 }
@@ -33,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
-<?= isset($success) ? translateText($success) : '' ?>
-<?= isset($failure) ? translateText($failure) : '' ?>
+<?= isset($success['delete']) ? translateText($success['delete']) : '' ?>
+<?= isset($failure['delete']) ? translateText($failure['delete']) : '' ?>
 <h1> <?= translateText('Welcome back, ') . $_SESSION['username'] ?> !</h1>
 <?php foreach ($products as $product): ?>
     <div class="product">
@@ -51,14 +60,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <span>
             <a href="product.php?productId=<?= $product['id'] ?>"><?= translateText('Edit Items') ?></a>
             <form action="products.php" method="post">
-                <button type="submit" value="<?= $product['id'] ?>"
-                        name="delete"><?= translateText('Delete') ?></button>
+                <input type="hidden" name="delete" value="<?= $product['id'] ?>">
+                <button type="submit"><?= translateText('Delete') ?></button>
             </form>
         </span>
     </div>
     <br>
 <?php endforeach ?>
 <a href="product.php?addProduct=true"><?= translateText('Add Product') ?> </a>
+
+<form action="products.php" method="post">
+    <input type="hidden" name="logout" value="true">
+    <button type="submit"><?= translateText('Logout') ?></button>
+</form>
 <a href="?action=logout"><?= translateText('Logout') ?> </a>
 <?php
 
