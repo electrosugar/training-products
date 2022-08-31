@@ -2,19 +2,24 @@
 
 require_once 'common.php';
 
+if (isset($_SESSION['loggedIn'])) {
+    header('location: products.php');
+    die();
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (empty(strip_tags($_POST['username']))) {
-        $userError = 'Please enter username.';
+    if (empty($_POST['username'])) {
+        $failure['username'] = 'Please enter username.';
     } else {
         $username = strip_tags($_POST['username']);
     }
-    if (empty(strip_tags($_POST['password']))) {
-        $passwordError = 'Please enter your password.';
+    if (empty($_POST['password'])) {
+        $failure['password'] = 'Please enter your password.';
     } else {
         $password = strip_tags($_POST['password']);
     }
     $pdoConnection = getDatabaseConnection();
-    $userLogin = $pdoConnection->prepare('SELECT id,username,password from users where username= ?');
+    $userLogin = $pdoConnection->prepare('SELECT id,username,password FROM users WHERE username= ?');
     if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
         if (isset($password) && password_verify($password, $user['password'])) {
             // Store data in session variables
@@ -25,10 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('location: products.php');
             die();
         } else {
-            $loginError = 'Invalid username or password';
+            $failure['login'] = 'Invalid username or password';
         }
     }
-
 }
 
 ?>
@@ -46,15 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <form class="login" method="post" action="login.php">
         <h1>Login</h1>
+        <h4 class="error"><?= isset($failure['login']) ? translateText($failure['login']) : '' ?></h4>
         <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
                value="<?= $value = isset($_POST['username']) ? $_POST['username'] : '' ?>">
+        <?= isset($userError) ? translateText($userError) : '' ?>
+        <h4 class="error"><?= isset($failure['username']) ? translateText($failure['username']) : '' ?></h4>
+
         <input type="password" placeholder="<?= translateText('Password') ?>" name="password" class="loginInputs"
                value="">
+        <h4 class="error"><?= isset($failure['password']) ? translateText($failure['password']) : '' ?></h4>
+
         <input type="submit" class="loginInputs" value="Login">
         <a href="index.php"><?= translateText('Anonymous User') ?></a>
-        <?= isset($userError) ? translateText($userError) : '' ?>
-        <?= isset($passwordError) ? translateText($passwordError) : '' ?>
-        <?= isset($loginError) ? translateText($loginError) : '' ?>
     </form>
 </div>
 </body>
