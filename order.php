@@ -2,24 +2,25 @@
 
 require_once 'common.php';
 
-$customers = [];
-$customer = [];
+$orders = [];
+$order = [];
 $pdoConnection = getDatabaseConnection();
 
 
-if (isset($_GET['showOrder'])) {
-    $selectCustomer = $pdoConnection->prepare('select * from customers where id = ?');
-    $selectCustomer->execute([strip_tags($_GET['showOrder'])]);
+if (isset($_GET['orderId'])) {
+    $selectOrder = $pdoConnection->prepare('SELECT * FROM orders WHERE id = ?');
+    $selectOrder->execute([strip_tags($_GET['orderId'])]);
 
-    $row = $selectCustomer->fetch();
-
-    prepareOrderWithProducts($row, $customers);
-    $customer = $customers[0];
+    $row = $selectOrder->fetch();
+    prepareOrderWithProducts($row, $orders);
+    $order = $orders[0];
     if(!$row){
-        resetCustomer($customers);
+        http_response_code(404);
     }
 }else{
-    resetCustomer($customers);
+    http_response_code(404);
+    include('404.php');
+    die();
 }
 
 
@@ -36,22 +37,22 @@ if (isset($_GET['showOrder'])) {
 <body>
 <div class="orders">
     <div class="order">
-        <h1><?= translateText('The order #') . $customer['id'] . translateText('has been recorded'); ?> </h1>
+        <h1><?= translateText('The order #') . $order['id'] . translateText(' has been recorded'); ?> </h1>
         <div class="product">
             <div class="info">
-                <span class="title"><?= translateText('Name: ') . $customer['name'] ?></span>
+                <span class="title"><?= translateText('Name: ') . $order['name'] ?></span>
                 <br>
-                <span class="description"><?= translateText('Contact: ') . $customer['contact'] ?></span>
+                <span class="description"><?= translateText('Contact: ') . $order['contact'] ?></span>
                 <br>
-                <span class="price"><?= translateText('Comment: ') . $customer['comment'] ?></span>
+                <span class="price"><?= translateText('Comment: ') . $order['comment'] ?></span>
                 <br>
-                <span class="date"><?= translateText('Date: ') . $customer['creation_date'] ?></span>
+                <span class="date"><?= translateText('Date: ') . $order['creation_date'] ?></span>
                 <br>
             </div>
-            <span><?= translateText('Total Price: ') . $customer['price'] . getCurrency() ?></span>
+            <span><?= translateText('Total Price: ') . $order['price'] . getCurrency() ?></span>
         </div>
         <div class="selectedProducts">
-            <?php foreach ($customer['productArray'] as $product): ?>
+            <?php foreach ($order['productArray'] as $product): ?>
                 <div class="product">
                     <img src="images/<?= $product['id_product'] ?>.png"
                          alt="<?= $product['id_product'] ?>-image" class="roundImage">
@@ -60,9 +61,11 @@ if (isset($_GET['showOrder'])) {
                         <br>
                         <span class="description"><?=translateText('Description: ') . $product['description'] ?></span>
                         <br>
-                        <span class="price"><?=translateText('Price: ') . $product['price'] . getCurrency() ?></span>
+                        <span class="price"><?=translateText('Price per item: ') . $product['price'] . getCurrency() ?></span>
                         <br>
                         <span class="quantity"><?= translateText('Quantity: ') . $product['quantity'] ?></span>
+                        <br>
+                        <span class="quantity"><?= translateText('Price: ') . $product['price'] * $product['quantity']  . getCurrency()?></span>
                         <br>
                     </div>
                 </div>
