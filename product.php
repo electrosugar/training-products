@@ -29,9 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (strlen((int)$_POST['price']) > 8) {
             $failure['price'] = 'The price cannot be bigger than 8 digits<br>';
         }
-        if (!filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT)){
-            if ($failure['price']){
+        if (!filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT)) {
+            if (isset($failure['price'])) {
                 $failure['price'] .= 'It has to be a valid number <br>';
+            } else {
+                $failure['price'] = 'It has to be a valid number <br>';
             }
         }
     }
@@ -55,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 $failure['edit'] = 'Failed Update!';
             }
-        } else {
+        } elseif (!$_FILES['image']['tmp_name']) {
             $failure['edit'] = 'No editing was done!';
         }
         $targetDir = 'images/';
