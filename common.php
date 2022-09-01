@@ -43,7 +43,7 @@ function fetchQueryMarks()
 }
 
 //fetches and array of products from the supplied query
-function getProductsArray($queryMarks, $pdoConnection, $selectProducts)
+function getProductsArray($pdoConnection, $selectProducts, $queryMarks = '')
 {
     if ($queryMarks) {
         $statementSelectProducts = $pdoConnection->prepare($selectProducts);
@@ -67,15 +67,6 @@ function translateText($text, $language = 'english')
     return $text;
 }
 
-function logout()
-{
-    session_start();
-    session_unset();
-    session_destroy();
-    header('Location: login.php');
-    die();
-}
-
 function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
 {
     if (isset($_POST[$columnName]) && !empty($_POST[$columnName])) {
@@ -90,30 +81,58 @@ function addUpdateQueryColumns(& $updateValues, & $updateColumns, $columnName)
     return $updateColumns;
 }
 
-function prepareOrderWithProducts($row, & $orders)
+function fetchOrderStatement()
 {
-    $databaseConnection = getDatabaseConnection();
-    $selectProductIds = $databaseConnection->prepare('SELECT id_product, quantity, price FROM order_product WHERE id_order = ?');
-    if ($selectProductIds) {
-        $selectProductIds->execute([$row['id']]);
-        $price = 0;
-        $productArray = [];
-        $productPriceIndex = 0;
-        while ($order = $selectProductIds->fetch()) {
-            $selectPrice = $databaseConnection->prepare('SELECT * FROM products WHERE id = ?');
-            $selectPrice->execute([$order['id_product']]);
-            $productArray[] = $selectPrice->fetch();
-            $productArray[$productPriceIndex]['id_product'] = $order['id_product'];
-            $productArray[$productPriceIndex]['quantity'] = $order['quantity'];
-            $productArray[$productPriceIndex]['price'] = $order['price'];
-            $price += $order['price'] * $order['quantity'];
-            $productPriceIndex += 1;
+    $pdoConnection = getDatabaseConnection();
 
-        }
-        $row['price'] = $price;
-        $row['productArray'] = $productArray;
-        $orders[] = $row;
+    $selectOrder = $pdoConnection->prepare('SELECT   OP.id_order,
+                                                               O.id,
+                                                               O.name,
+                                                               O.contact,
+                                                               O.comment,
+                                                               O.creation_date,
+                                                               GROUP_CONCAT(COALESCE(P.title, \'NULL\') SEPARATOR \',\') AS titles,
+                                                               GROUP_CONCAT(COALESCE(P.description, \'NULL\') SEPARATOR \',\') AS descriptions,
+                                                               GROUP_CONCAT(OP.price SEPARATOR \',\') AS prices,
+                                                               GROUP_CONCAT(OP.quantity SEPARATOR \',\') AS quantities,
+                                                               SUM(OP.quantity * OP.price) AS totalPrice,
+                                                               GROUP_CONCAT(COALESCE(OP.id_product, \'NULL\') SEPARATOR \',\') AS product_ids FROM products P
+                                                               RIGHT OUTER JOIN order_product OP ON OP.id_product = P.id  INNER JOIN orders O ON O.id = OP.id_order WHERE O.id = ? GROUP BY OP.id_order');
+    return $selectOrder;
+}
+
+function orderToArray($row)
+{
+    $order['id'] = $row['id'];
+    $order['name'] = $row['name'];
+    $order['contact'] = $row['contact'];
+    $order['comment'] = $row['comment'];
+    $order['creation_date'] = $row['creation_date'];
+
+    $titles = explode(',', $row['titles']);
+    $descriptions = explode(',', $row['descriptions']);
+    $prices = explode(',', $row['prices']);
+    $quantities = explode(',', $row['quantities']);
+    $productId = explode(',', $row['product_ids']);
+
+    $productArray = [];
+    $order['productArray'] = [];
+    foreach ($productId as $key => $id) {
+        $productArray['id'] = $id;
+        $productArray['title'] = $titles[$key];
+        $productArray['description'] = $descriptions[$key];
+        $productArray['price'] = $prices[$key];
+        $productArray['quantity'] = $quantities[$key];
+        $order['productArray'][] = $productArray;
     }
-    $selectPrice = null;
-    $selectProductIds = null;
+
+    $order['totalPrice'] = $row['totalPrice'];
+
+    return $order;
+}
+
+function redirect404(){
+    http_response_code(404);
+    include('404.php');
+    die();
 }

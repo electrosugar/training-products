@@ -8,19 +8,15 @@ $pdoConnection = getDatabaseConnection();
 
 
 if (isset($_GET['orderId'])) {
-    $selectOrder = $pdoConnection->prepare('SELECT * FROM orders WHERE id = ?');
+    $selectOrder = fetchOrderStatement();
     $selectOrder->execute([strip_tags($_GET['orderId'])]);
-
     $row = $selectOrder->fetch();
-    prepareOrderWithProducts($row, $orders);
-    $order = $orders[0];
-    if(!$row){
-        http_response_code(404);
+    $order = orderToArray($row);
+    if (!$row) {
+        redirect404();
     }
-}else{
-    http_response_code(404);
-    include('404.php');
-    die();
+} else {
+    redirect404();
 }
 
 
@@ -49,23 +45,23 @@ if (isset($_GET['orderId'])) {
                 <span class="date"><?= translateText('Date: ') . $order['creation_date'] ?></span>
                 <br>
             </div>
-            <span><?= translateText('Total Price: ') . $order['price'] . getCurrency() ?></span>
+            <span><?= translateText('Total Price: ') . $order['totalPrice'] . getCurrency() ?></span>
         </div>
         <div class="selectedProducts">
             <?php foreach ($order['productArray'] as $product): ?>
                 <div class="product">
-                    <img src="images/<?= $product['id_product'] ?>.png"
-                         alt="<?= $product['id_product'] ?>-image" class="roundImage">
+                    <img src="images/<?= $product['id'] ?>.png"
+                         alt="<?= $product['id'] ?>-image" class="roundImage">
                     <div class="info">
-                        <span class="title"><?=translateText('Title: ') . $product['title'] ?></span>
+                        <span class="title"><?= translateText('Title: ') . $product['title'] ?></span>
                         <br>
-                        <span class="description"><?=translateText('Description: ') . $product['description'] ?></span>
+                        <span class="description"><?= translateText('Description: ') . $product['description'] ?></span>
                         <br>
-                        <span class="price"><?=translateText('Price per item: ') . $product['price'] . getCurrency() ?></span>
+                        <span class="price"><?= translateText('Price per item: ') . $product['price'] . getCurrency() ?></span>
                         <br>
                         <span class="quantity"><?= translateText('Quantity: ') . $product['quantity'] ?></span>
                         <br>
-                        <span class="quantity"><?= translateText('Price: ') . $product['price'] * $product['quantity']  . getCurrency()?></span>
+                        <span class="quantity"><?= translateText('Price: ') . $product['price'] * $product['quantity'] . getCurrency() ?></span>
                         <br>
                     </div>
                 </div>
