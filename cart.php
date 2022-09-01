@@ -156,7 +156,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     . chunk_split(base64_encode($productImage))
                     . $bound;
             }
-            unset($_SESSION['quantity']);
             $success['checkout'] = 'Successful Checkout!';
             $mailMessage .= $boundaryFinal;
             mail($mailTo, $mailSubject, $mailMessage, $mailHeaders);
