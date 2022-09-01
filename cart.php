@@ -5,7 +5,7 @@ require_once 'common.php';
 $pdoConnection = getDatabaseConnection();
 if ($queryMarks = fetchQueryMarks()) {
     $selectProducts = 'SELECT * FROM products WHERE id in (' . $queryMarks . ')';
-    $products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
+    $products = getProductsArray($pdoConnection, $selectProducts, $queryMarks);
 } else {
     $products = [];
 }
@@ -81,11 +81,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             //fetch order
-            $orders = [];
-            $selectOrder = $pdoConnection->prepare('SELECT * FROM orders WHERE id = ?');
+            $selectOrder = fetchOrderStatement();
             $selectOrder->execute([$idOrder]);
             $orderInfo = $selectOrder->fetch();
-            prepareOrderWithProducts($orderInfo, $orders);
+
+            $order = orderToArray($orderInfo);
+
             //create email with embedded images
             $mailTo = SHOP_MANAGER_EMAIL;
             $mailSubject = 'Order # ' . $orderInfo['id'] . ' from ' . $orderInfo['name'];
@@ -106,58 +107,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $mailMessage .= '<html>';
             $mailMessage .= '<head><style>' . file_get_contents('stylesheets/index.css') . '</style> </head>';
             $mailMessage .= '<body>';
-            foreach ($orders as $orderDetails) {
-                $mailMessage .= '<div class="order">';
-                $mailMessage .= '<div class="product">';
-                $mailMessage .= '<div class="info">';
-                $mailMessage .= '<span class="title">' . translateText('Name: ') . $orderDetails['name'] . '</span>';
-                $mailMessage .= '<br>';
-                $mailMessage .= '<span class="description">' . translateText('Contact: ') . $orderDetails['contact'] . '</span>';
-                $mailMessage .= '<br>';
-                $mailMessage .= '<span class="price">' . translateText('Comment: ') . $orderDetails['comment'] . '</span>';
-                $mailMessage .= '<br>';
-                $mailMessage .= '<span class="date">' . translateText('Date: ') . $orderDetails['creation_date'] . '</span>';
-                $mailMessage .= '<br>';
-                $mailMessage .= '</div>';
-                $mailMessage .= '<span>' . translateText('Total Price: ') . $orderDetails['price'] . getCurrency() . '</span>';
-                $mailMessage .= '</div>';
-                $mailMessage .= '<div class="selectedProducts">';
-                foreach ($orderDetails['productArray'] as $product) {
-                    $mailMessage .= '<div class="product">';
-                    $mailMessage .= '<img src="cid:' . $product['id'] . '.png" class="roundImage">';
-                    $mailMessage .= '<div class="info">';
-                    $mailMessage .= '<span class="title">' . translateText('Title: ') . $product['title'] . '</span>';
-                    $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="description">' . translateText('Description: ') . $product['description'] . '</span>';
-                    $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="totalProductPrice">' . translateText('Price per item: ') . $product['price'] . getCurrency() . '</span>';
-                    $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="quantity">' . translateText('Quantity: ') . $product['quantity'] . '</span>';
-                    $mailMessage .= '<br>';
-                    $mailMessage .= '<span class="price">' . translateText('Price: ') . $product['price'] * $product['quantity'] . getCurrency() . '</span>';
-                    $mailMessage .= '<br>';
-                    $mailMessage .= '</div>';
-                    $mailMessage .= '</div>';
-                    $mailMessage .= '<br>';
-                }
-                $mailMessage .= '</div>';
-                $mailMessage .= '</div>';
-                $mailMessage .= '<br>';
 
+            $mailMessage .= '<div class="order">';
+            $mailMessage .= '<div class="product">';
+            $mailMessage .= '<div class="info">';
+            $mailMessage .= '<span class="title">' . translateText('Name: ') . $order['name'] . '</span>';
+            $mailMessage .= '<br>';
+            $mailMessage .= '<span class="description">' . translateText('Contact: ') . $order['contact'] . '</span>';
+            $mailMessage .= '<br>';
+            $mailMessage .= '<span class="price">' . translateText('Comment: ') . $order['comment'] . '</span>';
+            $mailMessage .= '<br>';
+            $mailMessage .= '<span class="date">' . translateText('Date: ') . $order['creation_date'] . '</span>';
+            $mailMessage .= '<br>';
+            $mailMessage .= '</div>';
+            $mailMessage .= '<span>' . translateText('Total Price: ') . $order['totalPrice'] . getCurrency() . '</span>';
+            $mailMessage .= '</div>';
+            $mailMessage .= '<div class="selectedProducts">';
+            foreach ($order['productArray'] as $product) {
+                $mailMessage .= '<div class="product">';
+                $mailMessage .= '<img src="cid:' . $product['id'] . '.png" class="roundImage">';
+                $mailMessage .= '<div class="info">';
+                $mailMessage .= '<span class="title">' . translateText('Title: ') . $product['title'] . '</span>';
+                $mailMessage .= '<br>';
+                $mailMessage .= '<span class="description">' . translateText('Description: ') . $product['description'] . '</span>';
+                $mailMessage .= '<br>';
+                $mailMessage .= '<span class="totalProductPrice">' . translateText('Price per item: ') . $product['price'] . getCurrency() . '</span>';
+                $mailMessage .= '<br>';
+                $mailMessage .= '<span class="quantity">' . translateText('Quantity: ') . $product['quantity'] . '</span>';
+                $mailMessage .= '<br>';
+                $mailMessage .= '<span class="price">' . translateText('Price: ') . $product['price'] * $product['quantity'] . getCurrency() . '</span>';
+                $mailMessage .= '<br>';
+                $mailMessage .= '</div>';
+                $mailMessage .= '</div>';
+                $mailMessage .= '<br>';
             }
+            $mailMessage .= '</div>';
+            $mailMessage .= '</div>';
+            $mailMessage .= '<br>';
 
             $mailMessage .= '</body></html>' . PHP_EOL . PHP_EOL . $bound;
-            foreach ($orders as $orderDetails) {
-                foreach ($orderDetails['productArray'] as $product) {
-                    $productImage = file_get_contents('images/' . $product['id'] . '.png');
-                    $productImageData = base64_encode($productImage);
-                    $mailMessage .= 'Content-Type: image/png; name="' . $product['id'] . '.png"' . PHP_EOL
-                        . 'Content-Transfer-Encoding: base64' . PHP_EOL
-                        . 'Content-ID: <' . $product['id'] . '.png>' . PHP_EOL
-                        . PHP_EOL
-                        . chunk_split(base64_encode($productImage))
-                        . $bound;
-                }
+            foreach ($order['productArray'] as $product) {
+                $productImage = file_get_contents('images/' . $product['id'] . '.png');
+                $productImageData = base64_encode($productImage);
+                $mailMessage .= 'Content-Type: image/png; name="' . $product['id'] . '.png"' . PHP_EOL
+                    . 'Content-Transfer-Encoding: base64' . PHP_EOL
+                    . 'Content-ID: <' . $product['id'] . '.png>' . PHP_EOL
+                    . PHP_EOL
+                    . chunk_split(base64_encode($productImage))
+                    . $bound;
             }
             unset($_SESSION['quantity']);
             $success['checkout'] = 'Successful Checkout!';
@@ -229,17 +226,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <br>
     <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name') ?>"
                                         value="<?= $value = isset($_POST['name']) ? $_POST['name'] : '' ?>">
-    <div class="error"><?= $value = isset($failure['name']) ? $failure['name'] : '' ?></div><br>
+    <div class="error"><?= $value = isset($failure['name']) ? $failure['name'] : '' ?></div>
+    <br>
 
     <?= translateText('Contact Details') ?> <input type="text" name="contact"
                                                    placeholder="<?= translateText('Contact Details') ?>"
                                                    value="<?= $value = isset($_POST['contact']) ? $_POST['contact'] : '' ?>">
-    <div class="error"><?= $value = isset($failure['contact']) ? $failure['contact'] : '' ?></div><br>
+    <div class="error"><?= $value = isset($failure['contact']) ? $failure['contact'] : '' ?></div>
+    <br>
 
     <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment') ?>"
                                            value="<?= $value = isset($_POST['comment']) ? $_POST['comment'] : '' ?>"
                                            id="big">
-    <div class="error"><?= $value = isset($failure['comment']) ? $failure['comment'] : '' ?></div><br>
+    <div class="error"><?= $value = isset($failure['comment']) ? $failure['comment'] : '' ?></div>
+    <br>
     <span class="formLinks">
         <input type="submit" value="Checkout">
         <a href="index.php"><?= translateText('Go to index') ?></a>
