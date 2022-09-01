@@ -136,3 +136,23 @@ function redirect404(){
     include('404.php');
     die();
 }
+
+function logout(){
+    session_start();
+    session_unset();
+    session_destroy();
+    header('Location: login.php');
+    die();
+}
+
+function checkLogin(){
+    $pdoConnection = getDatabaseConnection();
+    $selectUser = $pdoConnection->prepare('SELECT username FROM users WHERE id = ? ');
+    $selectUser->execute([$_SESSION['id']]);
+    if($selectUser->fetch()['username'] !== $_SESSION['username']){
+        logout();
+    }
+    if ((!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
+        logout();
+    }
+}
