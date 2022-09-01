@@ -8,7 +8,7 @@ if ($queryMarks = fetchQueryMarks()) {
     $selectProducts = 'SELECT * FROM products';
 }
 $pdoConnection = getDatabaseConnection();
-$products = getProductsArray($queryMarks, $pdoConnection, $selectProducts);
+$products = getProductsArray($pdoConnection, $selectProducts, $queryMarks);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!isset($_SESSION['cart'])) {
