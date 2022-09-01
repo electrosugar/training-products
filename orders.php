@@ -3,35 +3,25 @@
 require_once 'common.php';
 
 $pdoConnection = getDatabaseConnection();
-$selectAllOrders = $pdoConnection->prepare('SELECT * FROM orders');
-//$selectAllOrders = $pdoConnection->prepare('SELECT OP.id_order,
-//                                                               O.comment,
-//                                                               O.contact,
-//                                                               O.name,
-//                                                               GROUP_CONCAT(P.title SEPARATOR \',\') AS titles,
-//                                                               GROUP_CONCAT(P.description SEPARATOR \',\') AS descriptions,
-//                                                               GROUP_CONCAT(OP.price SEPARATOR \',\') AS prices,
-//                                                               GROUP_CONCAT(OP.quantity SEPARATOR \',\') AS quantities,
-//                                                               GROUP_CONCAT(OP.id_product SEPARATOR \',\') AS product_ids FROM products P
-//                                                                   INNER JOIN order_product OP ON OP.id_product = P.id  INNER JOIN orders O ON O.id = OP.id_order GROUP BY OP.id_order');
+//$selectAllOrders = $pdoConnection->prepare('SELECT * FROM orders');
+$selectAllOrders = $pdoConnection->prepare('SELECT   OP.id_order,
+                                                               O.id,
+                                                               O.name,
+                                                               O.contact,
+                                                               O.comment,
+                                                               O.creation_date,
+                                                               GROUP_CONCAT(COALESCE(P.title, \'NULL\') SEPARATOR \',\') AS titles,
+                                                               GROUP_CONCAT(COALESCE(P.description, \'NULL\') SEPARATOR \',\') AS descriptions,
+                                                               GROUP_CONCAT(OP.price SEPARATOR \',\') AS prices,
+                                                               GROUP_CONCAT(OP.quantity SEPARATOR \',\') AS quantities,
+                                                               SUM(OP.quantity * OP.price) AS totalPrice,
+                                                               GROUP_CONCAT(COALESCE(OP.id_product, \'NULL\') SEPARATOR \',\') AS product_ids FROM products P
+                                                               RIGHT OUTER JOIN order_product OP ON OP.id_product = P.id  INNER JOIN orders O ON O.id = OP.id_order GROUP BY OP.id_order');
 $selectAllOrders->execute();
 
 $orders = [];
-$productArray = [];
-
 foreach ($selectAllOrders->fetchAll() as $row) {
-//    $orders['name'] = $row['name'];
-//    $orders['comment'] = $row['comment'];
-//    $orders['contact'] = $row['contact'];
-//    $prices = explode( ',', $row['titles']);
-//    $descriptions = explode( ',', $row['descriptions']);
-//    $prices = explode( ',', $row['prices']);
-//    $quantities = explode( ',', $row['quantities']);
-//    $productId = explode( ',', $row['product_ids']);
-//    print_r($prices);
-    echo '<br>';
-
-    prepareOrderWithProducts($row, $orders);
+    $orders[] = orderToArray($row);
 }
 
 ?>
@@ -60,7 +50,7 @@ foreach ($selectAllOrders->fetchAll() as $row) {
                     <span class="date"><?= translateText('Date: ') . $order['creation_date'] ?></span>
                     <br>
                 </div>
-                <span><?= translateText('Total Price: ') . $order['price'] . getCurrency() ?></span>
+                <span><?= translateText('Total Price: ') . $order['totalPrice'] . getCurrency() ?></span>
             </div>
             <div class="selectedProducts">
                 <?php foreach ($order['productArray'] as $product): ?>
