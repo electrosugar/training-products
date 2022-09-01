@@ -3,12 +3,10 @@
 require_once 'common.php';
 $selectProducts = 'SELECT * FROM products';
 $pdoConnection = getDatabaseConnection();
-$products = getProductsArray('', $pdoConnection, $selectProducts);
+$products = getProductsArray($pdoConnection, $selectProducts);
 
+checkLogin();
 
-if (isset($_GET['action']) && $_GET['action'] == 'logout' || (!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
-    logout();
-}
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     echo $_POST['delete'];
     if (isset($_POST['delete'])) {
@@ -23,11 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (isset($_POST['logout'])) {
-        unset($_SESSION['username']);
-        unset($_SESSION['id']);
-        unset($_SESSION['loggedIn']);
-        header('Location: index.php');
-        die();
+        logout();
     }
 }
 
@@ -73,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <input type="hidden" name="logout" value="true">
     <button type="submit"><?= translateText('Logout') ?></button>
 </form>
-<a href="?action=logout"><?= translateText('Logout') ?> </a>
 <?php
 
 die();
