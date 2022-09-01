@@ -1,9 +1,7 @@
 <?php
 
 require_once 'common.php';
-if ((!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
-    logout();
-}
+
 
 if (isset($_GET['addProduct']) && strip_tags($_GET['addProduct'])) {
     unset($_SESSION['productId']);
@@ -13,8 +11,10 @@ if (isset($_GET['productId']) && !empty($_GET['productId']) && filter_var($_GET[
     $_SESSION['productId'] = strip_tags($_GET['productId']);
 }
 
-$pdoConnection = getDatabaseConnection();
 
+checkLogin();
+
+$pdoConnection = getDatabaseConnection();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     //validation
