@@ -2,7 +2,6 @@
 
 require_once 'common.php';
 
-$pdoConnection = getDatabaseConnection();
 if ($queryMarks = fetchQueryMarks()) {
     $selectProducts = 'SELECT * FROM products WHERE id in (' . $queryMarks . ')';
     $products = getProductsArray($pdoConnection, $selectProducts, $queryMarks);
@@ -51,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (isset($_POST['name']) && isset($_POST['contact']) && isset($_POST['comment'])) {
+
         $name = strip_tags($_POST['name']);
         $contact = strip_tags($_POST['contact']);
         $comment = strip_tags($_POST['comment']);
@@ -67,6 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if (!empty($name) && !empty($contact) && !empty($comment) && !empty($_SESSION['cart']) && !$failure) {
+
+
+
             $insertOrder = $pdoConnection->prepare('INSERT INTO orders (creation_date, name, contact, comment) VALUES (now(), ?, ?, ?)');
             $insertOrder->execute([$name, $contact, $comment]);
             $idOrder = $pdoConnection->lastInsertId();
@@ -156,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     . chunk_split(base64_encode($productImage))
                     . $bound;
             }
+
             $success['checkout'] = 'Successful Checkout!';
             $mailMessage .= $boundaryFinal;
             mail($mailTo, $mailSubject, $mailMessage, $mailHeaders);
@@ -172,9 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $selectProduct = null;
 }
 
-
+$title = 'Test';
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,69 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="stylesheets/index.css">
 </head>
 <body>
-<div class="products">
-    <?php foreach ($products as $product): ?>
-        <div class="product">
-            <img src="images/<?= $product['id']; ?>.png" alt="<?= $product['id'] ?>-image"
-                 height="100px" width="100px">
-            <div class="info">
-                <span class="title"><?= $product['title'] ?></span>
-                <br>
-                <span class="description"><?= $product['description'] ?></span>
-                <br>
-                <span class="price"><?= $product['price'] . getCurrency() . '*' . $value = isset($_SESSION['cart'][$product['id']]) ? $_SESSION['cart'][$product['id']] : '1' ?></span>
-                <span><?= '= ' . $product['price'] * $value = isset($_SESSION['cart'][$product['id']]) ? $_SESSION['cart'][$product['id']] : 1 ?></span>
-                <br>
-                <form action="cart.php" method="post">
-                    <label>
-                        <?= translateText('Quantity:') . $value = isset($_SESSION['cart'][$product['id']]) ? $_SESSION['cart'][$product['id']] . '<br>' : ('1' . '<br>') ?>
-                        <input type="number" name="quantity" min="1">
-                    </label>
-
-                    <div class="error"><?= $value = isset($failure['quantity'][$product['id']]) ? $failure['quantity'][$product['id']] : '' ?></div>
-
-                    <input type="hidden" name="productIdQuantity" value="<?= $product['id'] ?>" min="1">
-                    <button type="submit"><?= translateText('Update') ?></button>
-                </form>
-            </div>
-
-            <form action="cart.php" method="post">
-                <input type="hidden" name="remove" value="<?= $product['id'] ?>">
-                <button type="submit"><?= translateText('Remove') ?></button>
-            </form>
-        </div>
-    <?php endforeach ?>
-</div>
-<form action="cart.php" method="post" class="form">
-    <div class="error"> <?= isset($failure['order']) ? translateText($failure['order']) : '' ?></div>
-    <div class="success"> <?= isset($success['checkout']) ? translateText($success['checkout']) : '' ?></div>
-
-    <br>
-    <?= translateText('Name') ?> <input type="text" name="name" placeholder="<?= translateText('Name') ?>"
-                                        value="<?= $value = isset($_POST['name']) ? $_POST['name'] : '' ?>">
-    <div class="error"><?= $value = isset($failure['name']) ? $failure['name'] : '' ?></div>
-    <br>
-
-    <?= translateText('Contact Details') ?> <input type="text" name="contact"
-                                                   placeholder="<?= translateText('Contact Details') ?>"
-                                                   value="<?= $value = isset($_POST['contact']) ? $_POST['contact'] : '' ?>">
-    <div class="error"><?= $value = isset($failure['contact']) ? $failure['contact'] : '' ?></div>
-    <br>
-
-    <?= translateText('Comment') ?> <input type="text" name="comment" placeholder="<?= translateText('Comment') ?>"
-                                           value="<?= $value = isset($_POST['comment']) ? $_POST['comment'] : '' ?>"
-                                           id="big">
-    <div class="error"><?= $value = isset($failure['comment']) ? $failure['comment'] : '' ?></div>
-    <br>
-    <span class="formLinks">
-        <input type="submit" value="Checkout">
-        <a href="index.php"><?= translateText('Go to index') ?></a>
-        <a href="orders.php"><?= translateText('Go to orders') ?></a>
-    </span>
-</form>
-<?php
-
-die();
-?>
+<?php require_once 'layouts/cart.layout.php'; ?>
 </body>
 </html>
