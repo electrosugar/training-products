@@ -2,6 +2,7 @@
 
 require_once 'config.php';
 session_start();
+$pdoConnection = getDatabaseConnection();
 
 function getDatabaseConnection()
 {
@@ -13,8 +14,8 @@ function getDatabaseConnection()
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
     try {
-        $pdo = new PDO($dsn, USER, PASSWORD, $options);
-        return $pdo;
+        $pdoConnection = new PDO($dsn, USER, PASSWORD, $options);
+        return $pdoConnection;
     } catch (\PDOException $e) {
         throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
