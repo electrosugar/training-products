@@ -4,8 +4,6 @@ require_once 'common.php';
 
 $orders = [];
 $order = [];
-$pdoConnection = getDatabaseConnection();
-
 
 if (isset($_GET['orderId'])) {
     $selectOrder = fetchOrderStatement();
