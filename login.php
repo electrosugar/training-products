@@ -18,21 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $password = strip_tags($_POST['password']);
     }
-    $pdoConnection = getDatabaseConnection();
     $userLogin = $pdoConnection->prepare('SELECT id,username,password FROM users WHERE username= ?');
-    if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
-        if (isset($password) && password_verify($password, $user['password'])) {
-            // Store data in session variables
-            $_SESSION['loggedIn'] = true;
-            $_SESSION['id'] = $user['id'];
-            $_SESSION['username'] = $username;
-            // Redirect user to products page
-            header('location: products.php');
-            die();
-        } else {
+    if(empty($failure)){
+        if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
+            if (isset($password) && password_verify($password, $user['password'])) {
+                // Store data in session variables
+                $_SESSION['loggedIn'] = true;
+                $_SESSION['id'] = $user['id'];
+                $_SESSION['username'] = $username;
+                // Redirect user to products page
+                header('location: products.php');
+                die();
+            } else {
+                $failure['login'] = 'Invalid username or password';
+            }
+        }
+        else {
             $failure['login'] = 'Invalid username or password';
         }
     }
+
 }
 
 ?>
@@ -52,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h1>Login</h1>
         <h4 class="error"><?= isset($failure['login']) ? translateText($failure['login']) : '' ?></h4>
         <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
-               value="<?= $value = isset($_POST['username']) ? $_POST['username'] : '' ?>">
+               value="<?= $value = isset($_POST['username']) ? htmlspecialchars(strip_tags($_POST['username'])) : '' ?>">
         <?= isset($userError) ? translateText($userError) : '' ?>
         <h4 class="error"><?= isset($failure['username']) ? translateText($failure['username']) : '' ?></h4>
 
