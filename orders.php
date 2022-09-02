@@ -1,9 +1,8 @@
 <?php
 
 require_once 'common.php';
+checkLogin();
 
-$pdoConnection = getDatabaseConnection();
-//$selectAllOrders = $pdoConnection->prepare('SELECT * FROM orders');
 $selectAllOrders = $pdoConnection->prepare('SELECT   OP.id_order,
                                                                O.id,
                                                                O.name,
@@ -52,27 +51,7 @@ foreach ($selectAllOrders->fetchAll() as $row) {
                 </div>
                 <span><?= translateText('Total Price: ') . $order['totalPrice'] . getCurrency() ?></span>
             </div>
-            <div class="selectedProducts">
-                <?php foreach ($order['productArray'] as $product): ?>
-                    <div class="product">
-                        <img src="images/<?= $value = isset($product['id']) ? $product['id'] : translateText('missing id ') ?>.png"
-                             alt="<?= $value = isset($product['id']) ? $product['id'] : translateText('missing id ') ?>-image"
-                             class="roundImage">
-                        <div class="info">
-                            <span class="title"><?= translateText('Title: ') . $value = isset($product['title']) ? $product['title'] : '<span class="error">' . translateText('missing title ') . '</span>' ?></span>
-                            <br>
-                            <span class="description"><?= translateText('Description: ') . $value = isset($product['description']) ? $product['description'] : '<span class="error">' . translateText('missing description ') . '</span>' ?></span>
-                            <br>
-                            <span class="price"><?= translateText('Price per item: ') . $product['price'] . getCurrency() ?></span>
-                            <br>
-                            <span class="quantity"><?= translateText('Quantity: ') . $product['quantity'] ?></span>
-                            <br>
-                            <span class="quantity"><?= translateText('Price: ') . $product['price'] * $product['quantity'] . getCurrency() ?></span>
-                            <br>
-                        </div>
-                    </div>
-                <?php endforeach ?>
-            </div>
+            <a href="order.php?orderId=<?= $order['id'] ?>"><?= translateText('View Order Details') ?></a>
         </div>
     <?php endforeach ?>
 
