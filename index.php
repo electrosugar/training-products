@@ -7,7 +7,6 @@ if ($queryMarks = fetchQueryMarks()) {
 } else {
     $selectProducts = 'SELECT * FROM products';
 }
-$pdoConnection = getDatabaseConnection();
 $products = getProductsArray($pdoConnection, $selectProducts, $queryMarks);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
