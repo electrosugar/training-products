@@ -1,7 +1,7 @@
 <?php
 
 require_once 'common.php';
-$selectProducts = 'SELECT * FROM products';
+$selectProducts = 'SELECT * FROM products WHERE deleted = 0';
 $products = getProductsArray($pdoConnection, $selectProducts);
 
 checkLogin();
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                                    INNER JOIN orders O ON O.id = OP.id_order WHERE P.id = ? GROUP BY OP.id_product');
         $selectProduct->execute([strip_tags($_POST['delete'])]);
 
-        if(empty($selectProduct->fetch())){
+        if (empty($selectProduct->fetch())) {
             $deleteProduct = $pdoConnection->prepare('DELETE FROM products WHERE id=? LIMIT 1');
             if ($deleteProduct->execute([strip_tags($_POST['delete'])]) === TRUE) {
                 $success['delete'] = 'Record deleted successfully!';
@@ -23,9 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             header('Location: products.php');
             die();
-        }
-        else {
-            $failure['delete'][$_POST['delete']] = 'Failed deleting record, there are orders containing it!';
+        } else {
+            $failure['delete'][$_POST['delete']] = 'Applying deleted tag to record, there are orders containing it!';
+            $updateProductDeleteTag = $pdoConnection->prepare('UPDATE products SET deleted=1 WHERE id = ?');
+            $updateProductDeleteTag->execute([strip_tags($_POST['delete'])]);
         }
 
     }
