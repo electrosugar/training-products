@@ -3,9 +3,9 @@
 require_once 'common.php';
 
 if ($queryMarks = fetchQueryMarks()) {
-    $selectProducts = 'SELECT * FROM products WHERE NOT id IN (' . $queryMarks . ')';
+    $selectProducts = 'SELECT * FROM products WHERE NOT id IN (' . $queryMarks . ') AND deleted = 0';
 } else {
-    $selectProducts = 'SELECT * FROM products';
+    $selectProducts = 'SELECT * FROM products WHERE deleted = 0';
 }
 $products = getProductsArray($pdoConnection, $selectProducts, $queryMarks);
 
