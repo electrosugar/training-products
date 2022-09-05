@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password = strip_tags($_POST['password']);
     }
     $userLogin = $pdoConnection->prepare('SELECT id,username,password FROM users WHERE username= ?');
-    if(empty($failure)){
+    if (empty($failure)) {
         if (isset($username) && $userLogin->execute([$username]) && $user = $userLogin->fetch()) {
             if (isset($password) && password_verify($password, $user['password'])) {
                 // Store data in session variables
@@ -32,8 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 $failure['login'] = 'Invalid username or password';
             }
-        }
-        else {
+        } else {
             $failure['login'] = 'Invalid username or password';
         }
     }
@@ -54,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="loginBody">
 
     <form class="login" method="post" action="login.php">
-        <h1>Login</h1>
+        <h1><?= translateText('Login') ?></h1>
         <h4 class="error"><?= isset($failure['login']) ? translateText($failure['login']) : '' ?></h4>
         <input type="text" placeholder="<?= translateText('Username') ?>" name="username" class="loginInputs"
                value="<?= $value = isset($_POST['username']) ? htmlspecialchars(strip_tags($_POST['username'])) : '' ?>">
@@ -65,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                value="">
         <h4 class="error"><?= isset($failure['password']) ? translateText($failure['password']) : '' ?></h4>
 
-        <input type="submit" class="loginInputs" value="Login">
+        <input type="submit" class="loginInputs" value="<?= translateText('Login') ?>">
         <a href="index.php"><?= translateText('Anonymous User') ?></a>
     </form>
 </div>
