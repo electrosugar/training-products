@@ -22,33 +22,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $missing = [];
 
     if (strlen($_POST['title']) > 50) {
-        $failure['title'] = translateText('Title has to be under 50 characters') . '<br>';
+        $failure['title'] = translateText('Title has to be under 50 characters');
     }
     if (strlen($_POST['description']) > 255) {
-        $failure['description'] = translateText('Description has to be under 255 characters') . '<br>';
+        $failure['description'] = translateText('Description has to be under 255 characters');
     }
     if (!empty($_POST['price'])) {
         if (strlen((int)$_POST['price']) > 8) {
-            $failure['price'] = translateText('The price cannot be bigger than 8 digits') . '<br>';
+            $failure['price'] = translateText('The price cannot be bigger than 8 digits');
         }
         if (!filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT)) {
             if (isset($failure['price'])) {
-                $failure['price'] .= translateText('Not a valid number') . '<br>';
+                $failure['price'] .= translateText('Not a valid number');
             } else {
-                $failure['price'] = translateText('Not a valid number') . '<br>';
+                $failure['price'] = translateText('Not a valid number');
             }
         }
+    }
+    if (empty($_POST['title'])) {
+        $missingEdit['title'] = translateText('No title uploaded -not modified! ');
+    }
+    if (empty($_POST['description'])) {
+        $missingEdit['description'] = translateText('No description uploaded -not modified! ');
+    }
+    if (empty($_POST['price'])) {
+        $missingEdit['price'] = translateText('No price uploaded -not modified! ');
+    }
+    if (empty($_FILES['image'])) {
+        $missingEdit['image'] = translateText('No image-not modified ');
     }
 
     if (!empty($_FILES['image']['tmp_name'])) {
         if (mime_content_type($_FILES['image']['tmp_name']) != 'image/png') {
-            $failure['imageType'] = translateText('File must be PNG ') . '<br>';
+            $failure['imageType'] = translateText('File must be PNG ');
 
         }
     }
 
     if ($_FILES['image']['size'] > 20000) {
-        $failure['image'] = translateText('File size must be under 2 MB ') . '<br>';
+        $failure['image'] = translateText('File size must be under 2 MB ');
     }
 
     $updateValues = [];
@@ -73,20 +85,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $targetDir = 'images/';
         $targetFile = $targetDir . $productEditId . '.png';
         if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-            $successFileUpload = 'The file ' . strip_tags(basename($_FILES['image']['name'])) . ' has been uploaded.';
+            $successFileUpload = translateText('The file ') . strip_tags(basename($_FILES['image']['name'])) . translateText(' has been uploaded.');
         }
     } else {
-        if(empty($_POST['title'])){
-            $missing['title'] =  translateText('No title uploaded! ') . '<br>';
+        if (empty($_POST['title'])) {
+            $missing['title'] = translateText('No title uploaded! ');
         }
-        if(empty($_POST['description'])){
-            $missing['description'] =  translateText('No description uploaded! ') . '<br>';
+        if (empty($_POST['description'])) {
+            $missing['description'] = translateText('No description uploaded! ');
         }
-        if(empty($_POST['price'])){
-            $missing['price'] =  translateText('No price uploaded! ') . '<br>';
+        if (empty($_POST['price'])) {
+            $missing['price'] = translateText('No price uploaded! ');
         }
-        if(empty($_POST['image'])){
-            $missing['image'] = translateText('No image uploaded! ') . '<br>';
+        if (empty($_FILES['image'])) {
+            $missing['image'] = translateText('No image uploaded! ');
         }
 
         if (count($updateValues) === 3 && is_uploaded_file($_FILES ['image'] ['tmp_name']) && !$failure) {
@@ -97,11 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             $targetFile = $targetDir . $pdoConnection->lastInsertId() . '.png';
             if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-                $successFileUpload = 'The file ' . strip_tags(basename($_FILES['image']['name'])) . ' has been uploaded.';
+                $successFileUpload = translateText('The file ') . strip_tags(basename($_FILES['image']['name'])) . translateText(' has been uploaded.');
             }
         } else if (!isset($_SESSION['productId']) && !$failure) {
             $failure['insert'] = 'To add an item correctly complete all fields';
-        } else if(!$failure){
+        } else if (!$failure) {
             $failure['edit'] = 'Edit failed';
         }
     }
@@ -125,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="error"><?= isset($failure['insert']) ? translateText($failure['insert']) : '' ?></div>
 <div class="error"><?= isset($failure['edit']) ? translateText($failure['edit']) : '' ?></div>
 <div class="success"><?= isset($success) ? translateText($success) : '' ?></div>
-<div class="success"><?= isset($successFileUpload) ? translateText($successFileUpload) : '' ?></div>
 
 <form enctype="multipart/form-data" action="product.php" method="post" class="form">
     <label>
@@ -135,14 +146,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </label><br>
     <div class="error"><?= isset($failure['title']) ? translateText($failure['title']) : '' ?></div>
     <div class="error"><?= isset($missing['title']) ? translateText($missing['title']) : '' ?></div>
+    <div class="error"><?= isset($missingEdit['title']) ? translateText($missingEdit['title']) : '' ?></div>
 
     <label>
         <?= translateText('Product Description') ?><br>
         <textarea name="description"
                   placeholder="<?= translateText('Description') ?>"><?= $value = isset($_POST['description']) ? htmlspecialchars(strip_tags($_POST['description'])) : $productToEdit['description'] ?></textarea>
     </label><br>
-    <div class="error"><?= isset($failure['description']) ? translateText($failure['description']) : '' ?></div>
+    <div class="error"><?= $failure['description'] ?? '' ?></div>
     <div class="error"><?= isset($missing['description']) ? translateText($missing['description']) : '' ?></div>
+    <div class="error"><?= isset($missingEdit['description']) ? translateText($missingEdit['description']) : '' ?></div>
 
     <label>
         <?= translateText('Product Price') ?><br>
@@ -151,17 +164,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </label><br>
     <div class="error"><?= isset($failure['price']) ? translateText($failure['price']) : '' ?></div>
     <div class="error"><?= isset($missing['price']) ? translateText($missing['price']) : '' ?></div>
+    <div class="error"><?= isset($missingEdit['price']) ? translateText($missingEdit['price']) : '' ?></div>
 
     <input type="file" name="image" value=<?= translateText('Browse') ?>>
-    <?= translateText('Current Image ') ?><img
-            src="images/<?= $value = isset($_SESSION['productId']) ? $_SESSION['productId'] : '' ?>.png"
-            alt="<?= $value = isset($_SESSION['productId']) ? $_SESSION['productId'] : '' ?>" height="50px"
-            width="50px">
+    <?php if (isset($_SESSION['productId'])): ?>
+        <?= translateText('Current Image : ') ?>
+        <img src="images/<?= $value = isset($_SESSION['productId']) ? $_SESSION['productId'] : '' ?>.png"
+             alt="<?= $value = isset($_SESSION['productId']) ? $_SESSION['productId'] : '' ?>" height="50px"
+             width="50px">
+    <?php endif ?>
+    <div class="success"><?= isset($successFileUpload) ? translateText($successFileUpload) : '' ?></div>
+
     <div class="error"><?= isset($failure['image']) ? translateText($failure['image']) : '' ?></div>
     <div class="error"><?= isset($failure['imageType']) ? translateText($failure['imageType']) : '' ?></div>
     <div class="error"><?= isset($missing['image']) ? translateText($missing['image']) : '' ?></div>
+    <div class="error"><?= isset($missingEdit['image']) ? translateText($missingEdit['image']) : '' ?></div>
 
-    <span class="formLinks"> <input type="submit" value="Save"></span>
+    <span class="formLinks"> <input type="submit" value="<?= translateText('Save') ?>"></span>
 </form>
 <a href="products.php"><?= translateText('Products') ?></a>
 
