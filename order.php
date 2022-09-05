@@ -32,19 +32,8 @@ if (isset($_GET['orderId'])) {
 <div class="orders">
     <div class="order">
         <h1><?= translateText('The order #') . $order['id'] . translateText(' has been recorded'); ?> </h1>
-        <div class="product">
-            <div class="info">
-                <span class="title"><?= translateText('Name: ') . $order['name'] ?></span>
-                <br>
-                <span class="description"><?= translateText('Contact: ') . $order['contact'] ?></span>
-                <br>
-                <span class="price"><?= translateText('Comment: ') . $order['comment'] ?></span>
-                <br>
-                <span class="date"><?= translateText('Date: ') . $order['creation_date'] ?></span>
-                <br>
-            </div>
-            <span><?= translateText('Total Price: ') . $order['totalPrice'] . getCurrency() ?></span>
-        </div>
+        <?php require_once 'layouts/order.layout.php'; ?>
+
         <div class="selectedProducts">
             <?php foreach ($order['productArray'] as $product): ?>
                 <div class="product">
