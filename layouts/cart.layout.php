@@ -199,4 +199,5 @@
     <?= translateText('Comment') ?>
     <div><?= $value = isset($_POST['comment']) ? htmlspecialchars(strip_tags($_POST['comment'])) : '' ?></div>
 <?php endif; ?>
+
 </body>
