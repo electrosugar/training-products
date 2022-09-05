@@ -110,11 +110,11 @@ function orderToArray($row)
     $order['comment'] = $row['comment'];
     $order['creation_date'] = $row['creation_date'];
 
-    $titles = explode(',', $row['titles']);
-    $descriptions = explode(',', $row['descriptions']);
-    $prices = explode(',', $row['prices']);
-    $quantities = explode(',', $row['quantities']);
-    $productId = explode(',', $row['product_ids']);
+    $titles = explode(',', $row['titles'] ?? '');
+    $descriptions = explode(',', $row['descriptions'] ?? '');
+    $prices = explode(',', $row['prices'] ?? '');
+    $quantities = explode(',', $row['quantities'] ?? '');
+    $productId = explode(',', $row['product_ids'] ?? '');
 
     $productArray = [];
     $order['productArray'] = [];
@@ -132,13 +132,15 @@ function orderToArray($row)
     return $order;
 }
 
-function redirect404(){
+function redirect404()
+{
     http_response_code(404);
     include('404.php');
     die();
 }
 
-function logout(){
+function logout()
+{
     session_start();
     session_unset();
     session_destroy();
@@ -146,11 +148,12 @@ function logout(){
     die();
 }
 
-function checkLogin(){
+function checkLogin()
+{
     $pdoConnection = getDatabaseConnection();
     $selectUser = $pdoConnection->prepare('SELECT username FROM users WHERE id = ? ');
     $selectUser->execute([$_SESSION['id']]);
-    if($selectUser->fetch()['username'] !== $_SESSION['username']){
+    if ($selectUser->fetch()['username'] !== $_SESSION['username']) {
         logout();
     }
     if ((!isset($_SESSION['id']) || !isset($_SESSION['username']))) {
